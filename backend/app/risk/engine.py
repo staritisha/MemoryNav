@@ -299,8 +299,8 @@ class ContextWeightResolver:
             return 0.0, None, None
 
         top = hits[0]
-        text       = top.get("text", "")
-        similarity = top.get("similarity", 0.0)
+        text       = top.text
+        similarity = top.similarity
 
         if similarity >= _SPATIAL_SIMILARITY_THRESHOLD:
             logger.info(

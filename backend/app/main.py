@@ -38,11 +38,10 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 
-# ── Routers (Phase 6 files 26-28 in build order) ─────────────────────────────
-# from app.api.ws_stream import router as ws_router  # TODO: build next
-# from app.api.memory_router import router as memory_router  # TODO
-# from app.api.preferences_router import router as preferences_router  # TODO
-from app.api.voice_router       import router as voice_router
+# ── Routers ───────────────────────────────────────────────────────────────────
+from app.api.ws_stream import router as ws_router
+from app.api.memory_router import router as memory_router
+from app.api.preferences_router import router as preferences_router
 
 # ── Heavy modules loaded once in lifespan ─────────────────────────────────────
 from app.perception.detector       import Detector
@@ -189,10 +188,10 @@ app.add_middleware(
 # voice_router already has prefix="/voice" defined internally (same
 # pattern as your other routers) so we don't double-prefix here.
 
-# app.include_router(ws_router)  # TODO
-# app.include_router(memory_router)  # TODO
-# app.include_router(preferences_router)  # TODO
-app.include_router(voice_router)         # REST /voice
+app.include_router(ws_router)
+app.include_router(memory_router)
+app.include_router(preferences_router)
+app.include_router(voice_router)
 
 
 # ── Health endpoint ───────────────────────────────────────────────────────────

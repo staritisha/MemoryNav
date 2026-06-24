@@ -99,7 +99,7 @@ class Settings(BaseSettings):
     # Module 1 — Perception Layer
     # ------------------------------------------------------------------- #
     YOLO_MODEL_PATH: str = str(MODELS_DIR / "yolov8n.pt")
-    DEPTH_MODEL_NAME: str = "LiheYoung/depth-anything-small-hf"
+    DEPTH_MODEL_NAME: str = "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf"
     EASYOCR_LANGUAGES: list[str] = ["en"]
     # Note: EasyOCR's GPU flag only accelerates via CUDA, not MPS — on an
     # M2 Mac this silently runs on CPU even when True. Harmless either way.
