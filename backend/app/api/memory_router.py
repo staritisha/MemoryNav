@@ -273,3 +273,12 @@ async def clear_all_memories(
     await loop.run_in_executor(_EXECUTOR, memory.clear)
     logger.warning("DELETE /memory?confirm=true — wiped %d entries.", count_before)
     return DeleteResponse(deleted_count=count_before, message=f"Cleared {count_before} memories.")
+
+@router.get("/spatial-map")
+async def get_spatial_map():
+    """Returns the current spatial room map as JSON."""
+    from app.api.ws_stream import get_pipeline_state
+    state = get_pipeline_state()
+    if state is None or state.spatial_map is None:
+        return {"map": {}}
+    return {"map": state.spatial_map.get_map()}

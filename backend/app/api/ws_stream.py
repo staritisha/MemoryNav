@@ -45,6 +45,7 @@ from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
 
 from app.alerts.temporal_manager import TemporalAlertManager
 from app.config import settings
+from app.memory.spatial_map import SpatialMap
 from app.memory_modules.long_term import LongTermMemory
 from app.memory_modules.preferences import PreferencesStore
 from app.memory_modules.short_term import SessionStore
@@ -78,6 +79,7 @@ class PipelineState:
     risk_engine: RiskEngine
     alert_manager: TemporalAlertManager
     tracker: ObjectTracker = None
+    spatial_map: SpatialMap = None
     frame_counter: int = field(default=0, repr=False)
     _ghost_alerted_at: Dict[str, float] = field(default_factory=dict, repr=False)
     
@@ -112,6 +114,8 @@ def init_pipeline() -> PipelineState:
         ),
     )
     _state.tracker = ObjectTracker(frame_rate=30)
+    _state.spatial_map = SpatialMap()
+    _state.spatial_map.set_room("Living Room")  # default room
     logger.info("Pipeline ready.")
     return _state
 
@@ -244,6 +248,13 @@ def _run_pipeline_sync(
             motion_factors[pd.class_name] = motion_factor_for(
                 _MOTION_STATE_MAP.get(trend, MotionState.UNKNOWN)
             )
+        state.spatial_map.update(
+            class_name=pd.class_name,
+            bbox=pd.bbox,
+            frame_width=frame.shape[1],
+            distance_m=dist,
+            confidence=pd.confidence,
+        )
 
     # 7. Risk — user_context_weight=None → ContextWeightResolver queries
     #    ChromaDB for spatial boost + SQLite for mobility flags.
