@@ -51,6 +51,7 @@ from app.memory_modules.short_term import SessionStore
 from app.perception.depth import DepthEstimator
 from app.perception.detector import Detector
 from app.perception.frame_quality import check_frame_quality
+from app.perception.tracker import ObjectTracker, TrackedDetection
 from app.risk.engine import MotionState, RiskEngine, motion_factor_for
 from app.risk.models import Detection as RiskDetection
 from app.voice.tts import TTSEngine
@@ -76,9 +77,10 @@ class PipelineState:
     long_term: LongTermMemory
     risk_engine: RiskEngine
     alert_manager: TemporalAlertManager
+    tracker: ObjectTracker = None
     frame_counter: int = field(default=0, repr=False)
     _ghost_alerted_at: Dict[str, float] = field(default_factory=dict, repr=False)
-
+    
 
 # Module-level singleton — shared across all WebSocket connections.
 _state: Optional[PipelineState] = None
@@ -109,6 +111,7 @@ def init_pipeline() -> PipelineState:
             suppression_window_s=settings.ALERT_SUPPRESSION_WINDOW_SECONDS
         ),
     )
+    _state.tracker = ObjectTracker(frame_rate=30)
     logger.info("Pipeline ready.")
     return _state
 
@@ -219,7 +222,10 @@ def _run_pipeline_sync(
 
     # 3. YOLO
     perception_detections = state.detector.detect(frame)
-    detected_classes = {d.class_name for d in perception_detections}
+
+    # 3b. Track — assigns track_id and is_new to each detection
+    tracked = state.tracker.update(perception_detections, frame.shape)
+    detected_classes = {d.class_name for d in tracked}
 
     # 4. Depth (frame-skip cached inside DepthEstimator)
     depth_map = state.depth_estimator.estimate(frame)
@@ -227,7 +233,7 @@ def _run_pipeline_sync(
     # 5–6. Build risk detections + per-class motion factors
     risk_detections: List[RiskDetection] = []
     motion_factors: Dict[str, float] = {}
-    for pd in perception_detections:
+    for pd in tracked:
         dist = state.depth_estimator.depth_at_bbox(depth_map, pd.bbox)
         if np.isnan(dist) or dist <= 0:
             dist = float("nan")
@@ -260,7 +266,7 @@ def _run_pipeline_sync(
 
     # 8. Write observations to long-term memory (every N frames)
     if state.frame_counter % _MEMORY_WRITE_EVERY_N_FRAMES == 0:
-        for pd, rd in zip(perception_detections, risk_detections):
+        for pd, rd in zip(tracked, risk_detections):
             if (pd.confidence >= _MEMORY_WRITE_MIN_CONFIDENCE
                     and not np.isnan(rd.distance_metres)):
                 _write_observation_to_memory(state, pd.class_name, rd.distance_metres)
