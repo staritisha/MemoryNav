@@ -45,7 +45,7 @@ from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
 
 from app.alerts.temporal_manager import TemporalAlertManager
 from app.config import settings
-from app.memory.spatial_map import SpatialMap
+from app.memory_modules.spatial_map import SpatialMap
 from app.memory_modules.long_term import LongTermMemory
 from app.memory_modules.preferences import PreferencesStore
 from app.memory_modules.short_term import SessionStore
@@ -227,8 +227,8 @@ def _run_pipeline_sync(
     # 3. YOLO
     perception_detections = state.detector.detect(frame)
 
-    # 3b. Track — assigns track_id and is_new to each detection
-    tracked = state.tracker.update(perception_detections, frame.shape)
+    # 3b. Track — assigns stable track_id to each detection
+    tracked = state.tracker.update(perception_detections, frame)
     detected_classes = {d.class_name for d in tracked}
 
     # 4. Depth (frame-skip cached inside DepthEstimator)
@@ -359,6 +359,7 @@ def _run_pipeline_sync(
         "spoke_ghost":       spoke_ghost,
         "memory_context":    memory_context,
         "suppression_stats": state.alert_manager.counts,
+        "spatial_map":       state.spatial_map.snapshot(),
     }
 
 

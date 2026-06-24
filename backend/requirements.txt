@@ -48,6 +48,7 @@ pydantic-settings==2.14.2          # [✓] 2025-12-xx; used in app/config.py
 
 # ── Computer vision — perception layer ───────────────────────────────────────
 ultralytics==8.3.100               # [~] YOLOv8-nano; YOLO weights auto-downloaded
+supervision==0.25.1                # ByteTrack object tracker (ships with ultralytics)
                                    #     by scripts/download_models.sh instead
 numpy==2.2.3                       # [~] 2.x required by torch 2.6+
 opencv-python==4.11.0.86           # [~] BGR frame decode + Laplacian blur check

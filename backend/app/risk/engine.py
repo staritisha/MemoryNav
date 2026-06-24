@@ -241,9 +241,6 @@ class ContextWeightResolver:
         """
         Read mobility_flags from SQLite preferences and sum their weights.
         Falls back to 1.0 (neutral) if the store is unavailable or empty.
-
-        mobility_flags is stored in preferences.py as a comma-separated
-        string: "bad_knee,uses_walker"
         """
         self._ensure_prefs()
         base = 1.0
@@ -253,13 +250,10 @@ class ContextWeightResolver:
             return base, active
 
         try:
-            flags_raw: str = self._prefs.get("mobility_flags", default="")
-            if not flags_raw:
-                return base, active
-
-            flags = [f.strip().lower() for f in flags_raw.split(",") if f.strip()]
+            prefs = self._prefs.load()
+            flags = prefs.mobility_flags  # List[str]
             for flag in flags:
-                increment = _MOBILITY_WEIGHT_MAP.get(flag, 0.0)
+                increment = _MOBILITY_WEIGHT_MAP.get(flag.strip().lower(), 0.0)
                 base += increment
                 if increment > 0:
                     active.append(flag)
