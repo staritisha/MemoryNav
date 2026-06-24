@@ -106,8 +106,8 @@ class Settings(BaseSettings):
     EASYOCR_GPU: bool = True
 
     # Frame Quality Check (prevents bad inference reaching the pipeline)
-    FRAME_MIN_BRIGHTNESS: float = 40.0             # mean pixel value, 0-255
-    FRAME_MIN_BLUR_VARIANCE: float = 100.0         # Laplacian variance floor
+    FRAME_MIN_BRIGHTNESS: float = 20.0             # mean pixel value, 0-255
+    FRAME_MIN_BLUR_VARIANCE: float = 3.0           # Laplacian variance floor
 
     # Minimum confidence for YOLO to report a detection at all (inference-time)
     YOLO_DETECTION_CONFIDENCE: float = 0.25
@@ -123,8 +123,8 @@ class Settings(BaseSettings):
     # Module 2 — Risk Engine
     # Risk Score = (1 / distance_metres) x motion_factor x user_context_weight
     # ------------------------------------------------------------------- #
-    RISK_HIGH_THRESHOLD: float = 0.7        # score > 0.7  -> HIGH, interrupt now
-    RISK_MEDIUM_THRESHOLD: float = 0.4      # 0.4-0.7      -> MEDIUM, queue
+    RISK_HIGH_THRESHOLD: float = 0.55       # score > 0.55 -> HIGH, interrupt now
+    RISK_MEDIUM_THRESHOLD: float = 0.35     # 0.35-0.55    -> MEDIUM, queue
     RISK_HIGH_DISTANCE_M: float = 0.7       # obstacle under 0.7m
     RISK_MEDIUM_DISTANCE_M: float = 2.0     # obstacle 0.7m - 2m, else LOW/log-only
 

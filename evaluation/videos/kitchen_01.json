@@ -1,0 +1,6 @@
+{
+  "events": [
+    {"obstacle": "refrigerator", "critical_time_s": 7.0},
+    {"obstacle": "dining table", "critical_time_s": 15.0}
+  ]
+}

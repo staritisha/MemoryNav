@@ -1,0 +1,6 @@
+{
+  "events": [
+    {"obstacle": "bed", "critical_time_s": 8.0},
+    {"obstacle": "chair", "critical_time_s": 18.0}
+  ]
+}

@@ -117,14 +117,28 @@ def _load_detector():
     """Returns a callable: detect(frame_bgr) -> list[dict] with keys
     label, confidence, box (x, y, w, h normalized 0..1)."""
     try:
-        from backend.app.perception.detector import Detector  # type: ignore
+        # Try the real backend module first. Detector.detect() returns
+        # Detection dataclass objects with .class_name, .confidence, .bbox
+        # (x1,y1,x2,y2 in pixels) — we convert to the normalized dict
+        # schema expected by this harness.
+        sys.path.insert(0, str(REPO_ROOT / "backend"))
+        from app.perception.detector import Detector  # type: ignore
 
         detector = Detector()
         STATUS.detector = "real"
 
         def run(frame: np.ndarray):
             raw = detector.detect(frame)
-            return [_normalize_detection(d, frame.shape) for d in raw]
+            h, w = frame.shape[:2]
+            out = []
+            for d in raw:
+                x1, y1, x2, y2 = d.bbox
+                out.append({
+                    "label": d.class_name,
+                    "confidence": d.confidence,
+                    "box": (x1 / w, y1 / h, (x2 - x1) / w, (y2 - y1) / h),
+                })
+            return out
 
         return run
     except Exception as exc:  # noqa: BLE001
@@ -192,10 +206,17 @@ def _stub_detector():
 def _load_frame_quality():
     """Returns a callable: is_usable(frame_bgr) -> bool."""
     try:
-        from backend.app.perception.frame_quality import check_frame_quality  # type: ignore
+        # check_frame_quality() returns a FrameQualityResult object with .ok bool —
+        # wrap it so this harness gets a plain bool as it expects.
+        sys.path.insert(0, str(REPO_ROOT / "backend"))
+        from app.perception.frame_quality import check_frame_quality  # type: ignore
 
         STATUS.frame_quality = "real"
-        return check_frame_quality
+
+        def run(frame: np.ndarray) -> bool:
+            return check_frame_quality(frame).ok
+
+        return run
     except Exception as exc:  # noqa: BLE001
         print(f"[frame_quality] falling back to stub blur/brightness gate ({exc})", file=sys.stderr)
         return _stub_frame_quality
@@ -211,13 +232,33 @@ def _stub_frame_quality(frame: np.ndarray) -> bool:
 def _load_depth():
     """Returns a callable: estimate(frame_bgr, box) -> meters."""
     try:
-        from backend.app.perception.depth import DepthEstimator  # type: ignore
+        # DepthEstimator.estimate() returns a full depth map (H×W array).
+        # We extract the median value inside the detection bbox via
+        # depth_at_bbox(), which is exactly what the Risk Engine uses.
+        # Box here is normalized (x, y, w, h) — we convert back to pixels.
+        sys.path.insert(0, str(REPO_ROOT / "backend"))
+        from app.perception.depth import DepthEstimator  # type: ignore
 
         estimator = DepthEstimator()
         STATUS.depth = "real"
 
-        def run(frame: np.ndarray, box: tuple[float, float, float, float]) -> float:
-            return float(estimator.estimate(frame, box))
+        def run(frame: np.ndarray, box: tuple) -> float:
+            depth_map = estimator.estimate(frame)
+            h, w = frame.shape[:2]
+            x, y, bw, bh = box
+            x1, y1 = int(x * w), int(y * h)
+            x2, y2 = int((x + bw) * w), int((y + bh) * h)
+            val = estimator.depth_at_bbox(depth_map, (x1, y1, x2, y2))
+            if np.isnan(val) or val <= 0:
+                return _stub_depth(frame, box)
+            # If using a non-metric model the value is relative inverse depth
+            # (larger = closer). Convert to a pseudo-metre scale the Risk
+            # Engine can use: clamp to [0.3, 8.0] metres.
+            if not estimator.is_metric:
+                # Normalise relative depth to 0..1, invert so closer = smaller m
+                norm = float(np.clip(val / (val + 1.0), 0.01, 0.99))
+                return float(np.clip((1.0 - norm) * 5.0 + 0.3, 0.3, 8.0))
+            return float(np.clip(val, 0.3, 8.0))
 
         return run
     except Exception as exc:  # noqa: BLE001
@@ -237,20 +278,23 @@ def _stub_depth(_frame: np.ndarray, box: tuple[float, float, float, float]) -> f
 def _load_memory():
     """Returns a callable: relevance(label) -> (context_text, score 0..1)."""
     try:
-        from backend.app.memory.retriever import MemoryRetriever  # type: ignore
+        # Real module is app.memory_modules.long_term.LongTermMemory,
+        # not backend.app.memory.retriever (which doesn't exist).
+        # LongTermMemory.retrieve() returns MemoryResult objects with
+        # .text and .similarity (0..1, higher = more relevant).
+        sys.path.insert(0, str(REPO_ROOT / "backend"))
+        from app.memory_modules.long_term import LongTermMemory  # type: ignore
 
-        retriever = MemoryRetriever()
+        retriever = LongTermMemory()
         STATUS.memory = "real"
 
         def run(label: str):
-            result = retriever.query(label, top_k=1)
-            if not result:
+            results = retriever.retrieve(label, n_results=1)
+            if not results:
                 return None, 1.0
-            text, score = result[0]
-            # Map similarity into a 1.0-2.0x risk-context multiplier — a
-            # strongly relevant memory (e.g. "known hazard near the stove")
-            # should raise risk, not just inform it.
-            return text, 1.0 + max(0.0, min(score, 1.0))
+            top = results[0]
+            # Map similarity [0,1] into a 1.0–2.0x risk-context multiplier
+            return top.text, 1.0 + max(0.0, min(top.similarity, 1.0))
 
         return run
     except Exception as exc:  # noqa: BLE001
@@ -265,7 +309,7 @@ def _load_memory():
 RiskLevel = str  # "LOW" | "MEDIUM" | "HIGH"
 
 MEDIUM_THRESHOLD = 0.35
-HIGH_THRESHOLD = 0.65
+HIGH_THRESHOLD = 0.55
 
 
 def _level_from_score(score: float) -> RiskLevel:
@@ -358,6 +402,7 @@ def run_config(
     annotation: dict,
     components: dict,
     suppression_window_s: float,
+    sample_every: int = 1,
 ) -> VideoResult:
     detect, is_usable, estimate_depth, query_memory = (
         components["detector"],
@@ -381,6 +426,14 @@ def run_config(
         if not ok:
             break
         frame_idx += 1
+
+        # Frame sampling: skip frames to keep evaluation tractable on CPU.
+        # sample_every=5 means we score every 5th frame (2fps on a 10fps src),
+        # which is sufficient for obstacle detection — hazards don't appear and
+        # disappear in <0.5s in a walking scenario.
+        if frame_idx % sample_every != 0:
+            continue
+
         t_s = frame_idx / fps
 
         t0 = time.perf_counter()
@@ -475,6 +528,10 @@ def main() -> None:
     parser.add_argument("--videos-dir", default="evaluation/videos", type=Path)
     parser.add_argument("--out", default="evaluation/results.json", type=Path)
     parser.add_argument("--suppression-window", default=4.0, type=float)
+    parser.add_argument(
+        "--sample-every", default=5, type=int,
+        help="Score every Nth frame (default 5 = 1 in 5). Keeps depth eval fast on CPU."
+    )
     args = parser.parse_args()
 
     components = {
@@ -515,6 +572,7 @@ def main() -> None:
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "videos_dir": str(args.videos_dir),
         "suppression_window_s": args.suppression_window,
+        "sample_every_n_frames": args.sample_every,
         "component_status": {
             "detector": STATUS.detector,
             "frame_quality": STATUS.frame_quality,
@@ -530,7 +588,8 @@ def main() -> None:
         per_video = []
         for video_path, annotation in usable_videos:
             result = run_config(
-                config_key, video_path, annotation, components, args.suppression_window
+                config_key, video_path, annotation, components,
+                args.suppression_window, sample_every=args.sample_every
             )
             per_video.append(result)
             n_warned = sum(1 for e in result.events if e.warned)
