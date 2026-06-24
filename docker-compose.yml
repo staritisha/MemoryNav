@@ -1,0 +1,52 @@
+# docker-compose.yml
+# Brings up the full MemoryNav stack: FastAPI backend + Next.js frontend,
+# with the ChromaDB home-context store persisted on the host via ./memory.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: memorynav-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persists the ChromaDB home-context store across container restarts —
+      # without this, every `docker compose down` wipes everything taught
+      # to the system in the Setup page.
+      - ./memory:/app/chroma_db
+      # Reuse downloaded YOLO weights instead of re-pulling on every rebuild.
+      - ./backend/models:/app/models
+    environment:
+      - CHROMA_DB_PATH=/app/chroma_db
+      - MODEL_DIR=/app/models
+      - DEVICE=cpu # override to "mps" only when running natively on Apple
+        # Silicon outside Docker — Docker Desktop containers can't see the
+        # host GPU/MPS device.
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Baked into the client bundle at build time. Must be reachable from
+        # the user's BROWSER, not from inside the frontend container — so
+        # this is the host-published port, not the "backend" service name.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_WS_URL: ws://localhost:8000/ws
+    container_name: memorynav-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+# ./memory is created on first run if it doesn't exist. To reset all taught
+# home context, stop the stack and `rm -rf ./memory`.

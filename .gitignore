@@ -1,0 +1,47 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+
+# Models & data — large binaries, regenerate via download_models.sh
+backend/models/*.pt
+memory/
+backend/chroma_db/
+
+# Evaluation videos — large files, don't commit raw footage
+evaluation/videos/*.mp4
+evaluation/videos/*.mov
+
+# OS
+.DS_Store
+
+# Catch-all for virtual envs anywhere in the repo
+.venv/
+**/.venv/
+**/venv/
+*.dylib
+*.so
+venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.DS_Store
+*.egg-info/
+dist/
+build/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.DS_Store
+*.egg-info/
+dist/
+build/

@@ -1,0 +1,85 @@
+# MemoryNav — Backend Dependencies
+# backend/requirements.txt
+#
+# Python: 3.11+ recommended. Requires Python >= 3.10
+# (sentence-transformers 5.x dropped 3.9 support).
+#
+# ── Install order ────────────────────────────────────────────────────────────
+#
+#   1. torch FIRST — its MPS/CUDA variant must be resolved before anything
+#      else runs pip's dependency solver. On Apple Silicon (M2) the standard
+#      PyPI wheel includes MPS support; no special index needed:
+#
+#        pip install torch torchvision
+#
+#      On Linux/CUDA, use the pytorch.org selector instead:
+#        https://pytorch.org/get-started/locally/
+#      then come back here:
+#
+#   2. pip install -r requirements.txt
+#
+# ── Version provenance key ───────────────────────────────────────────────────
+#
+#   [✓] Version confirmed live from PyPI on 2026-06-22
+#   [~] Estimated from release cadence; confirmed to be a real release
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+# ── PyTorch ───────────────────────────────────────────────────────────────────
+# Intentionally NOT pinned here — MPS, CUDA, and CPU wheels live on different
+# indexes (see above). Minimum tested: 2.6.0 (ships with stable MPS backend).
+# app/config.py's detect_device() handles mps/cuda/cpu at runtime.
+torch>=2.6.0
+torchvision>=0.21.0
+
+
+# ── Web framework ─────────────────────────────────────────────────────────────
+fastapi==0.128.0                   # [✓] 2025-12-27
+uvicorn[standard]==0.34.0          # [~] websockets + httptools extras included
+websockets==14.2                   # [~] required by fastapi WebSocket support
+python-dotenv==1.1.0               # [~] .env loading for Settings
+
+
+# ── Pydantic ──────────────────────────────────────────────────────────────────
+pydantic==2.11.0                   # [~] v2; fastapi 0.128 requires >=2.7
+pydantic-settings==2.14.2          # [✓] 2025-12-xx; used in app/config.py
+
+
+# ── Computer vision — perception layer ───────────────────────────────────────
+ultralytics==8.3.100               # [~] YOLOv8-nano; YOLO weights auto-downloaded
+                                   #     by scripts/download_models.sh instead
+numpy==2.2.3                       # [~] 2.x required by torch 2.6+
+opencv-python==4.11.0.86           # [~] BGR frame decode + Laplacian blur check
+Pillow==11.2.1                     # [~] PIL.Image for depth model preprocessing
+
+
+# ── Depth estimation — HuggingFace Depth-Anything ────────────────────────────
+transformers==5.12.1               # [✓] confirmed from release tar.gz Jun 2026
+huggingface-hub==0.33.0            # [~] model download + caching
+accelerate==1.6.0                  # [~] device_map / pipeline acceleration
+
+
+# ── Long-term memory — ChromaDB + sentence-transformers ──────────────────────
+chromadb==1.5.9                    # [✓] confirmed from PyPI Jun 2026
+sentence-transformers==5.6.0       # [✓] 2026-06-16 — latest confirmed release
+                                   #     embeds context for semantic retrieval
+
+
+# ── Voice — TTS + STT ────────────────────────────────────────────────────────
+pyttsx3==2.99                      # [✓] offline TTS; wraps NSSpeechSynthesizer
+                                   #     on macOS — no network call
+openai-whisper==20250625           # [✓] confirmed from pypistats Jun 2025 release
+easyocr==1.7.2                     # [✓] sign/label OCR in the perception layer
+                                   #     NOTE: install torch first (see above)
+
+
+# ── Cloud TTS (optional, requires ALLOW_CLOUD_SERVICES=true in .env) ─────────
+elevenlabs>=1.50.0                 # [~] only imported when effective_tts_engine
+                                   #     == "elevenlabs"; safe to omit if offline-only
+
+
+# ── Dev / test ────────────────────────────────────────────────────────────────
+pytest==8.4.0                      # [~]
+pytest-asyncio==0.26.0             # [~] async FastAPI route testing
+httpx==0.28.1                      # [~] TestClient for FastAPI integration tests

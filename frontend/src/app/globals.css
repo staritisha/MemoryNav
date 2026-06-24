@@ -1,0 +1,65 @@
+/* frontend/src/app/globals.css */
+@import "tailwindcss";
+
+:root {
+  --font-display: ui-sans-serif, system-ui, sans-serif;
+  --font-body: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+
+  /* Console theme tokens — instrument panel, not a SaaS dashboard. */
+  --void: #0a0c0e;
+  --panel: #14181b;
+  --panel-raised: #181c1f;
+  --hairline: #262b2f;
+  --signal: #5eead4;
+  --risk-high: #ff5c5c;
+  --risk-medium: #ffb84d;
+  --risk-low: #4ade80;
+  --text-primary: #e7ecee;
+  --text-secondary: #8b95a1;
+  --text-tertiary: #565e66;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+.font-body {
+  font-family: var(--font-body);
+}
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  /* Faint scanline-style grid, evokes a sensor readout without being loud. */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+::selection {
+  background: rgba(94, 234, 212, 0.25);
+}
+
+:focus-visible {
+  outline: 2px solid #5eead4;
+  outline-offset: 2px;
+}
+
+input[type="range"] {
+  accent-color: #5eead4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
