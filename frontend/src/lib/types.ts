@@ -1,5 +1,5 @@
 // frontend/src/lib/types.ts
-// Shared types - kept in sync with the backend WS + REST contracts.
+// Shared types, kept in sync with the backend WS + REST contracts.
 
 // ── Perception ───────────────────────────────────────────────────────────────
 

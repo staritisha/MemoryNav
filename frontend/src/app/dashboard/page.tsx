@@ -46,7 +46,7 @@ export default function DashboardPage() {
       message = frame.spoke;
       tone = "ghost";
     } else if (frame.suppressed) {
-      message = frame.suppressionReason ?? "Alert suppressed - within suppression window";
+      message = frame.suppressionReason ?? "Alert suppressed, within suppression window";
       tone = "suppressed";
     } else if (frame.riskLevel === "HIGH" && frame.riskReason) {
       message = frame.riskReason;
@@ -54,7 +54,7 @@ export default function DashboardPage() {
     } else {
       message =
         frame.riskReason ??
-        `${frame.riskLevel} risk - ${frame.detections.length} object(s) in view`;
+        `${frame.riskLevel} risk, ${frame.detections.length} object(s) in view`;
       tone = "info";
     }
 

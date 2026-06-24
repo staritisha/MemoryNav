@@ -93,7 +93,7 @@ export async function getPrefs(): Promise<UserPreferences> {
 export async function updatePrefs(
   prefs: Partial<UserPreferences>
 ): Promise<UserPreferences> {
-  // Backend PUT /preferences requires all fields - fill defaults for missing ones
+  // Backend PUT /preferences requires all fields, fill defaults for missing ones
   const full = {
     speech_rate_wpm:           prefs.speech_rate_wpm ?? 175,
     language:                  prefs.language ?? "en",

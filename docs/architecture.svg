@@ -21,7 +21,7 @@
   <rect width="900" height="640" fill="url(#grid)"/>
 
   <!-- Title -->
-  <text x="450" y="38" text-anchor="middle" font-size="15" font-weight="600" fill="#E7ECEE" letter-spacing="1">MemoryNav - Pipeline Architecture</text>
+  <text x="450" y="38" text-anchor="middle" font-size="15" font-weight="600" fill="#E7ECEE" letter-spacing="1">MemoryNav Pipeline Architecture</text>
   <text x="450" y="56" text-anchor="middle" font-size="10" fill="#565E66" letter-spacing="2">CAMERA → FRAME QUALITY → YOLO → BYTETRACK → DEPTH → RISK → MEMORY → ALERT MANAGER → VOICE</text>
 
   <!-- ── MAIN PIPELINE (left to right, y=140) ──────────────────────── -->

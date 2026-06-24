@@ -10,19 +10,19 @@ import type { AblationRow, ComponentMetric } from "@/lib/types";
 
 const ABLATION: AblationRow[] = [
   {
-    configuration: "A - YOLO only",
-    description: "Detection only - no depth, no memory, no alert suppression",
+    configuration: "A: YOLO only",
+    description: "Detection only, no depth, no memory, no alert suppression",
     successRate: 0.167,   // 1/6 events warned
   },
   {
-    configuration: "B - Detection + Depth + Risk",
+    configuration: "B: Detection + Depth + Risk",
     description: "Distance-aware risk scoring, no memory or suppression",
     successRate: 0.667,   // 4/6 events warned
   },
   {
     configuration: "Full system",
     description: "Detection + depth + risk + ChromaDB memory + alert suppression",
-    successRate: 0.667,   // 4/6 events warned - suppression reduces false alerts, not misses
+    successRate: 0.667,   // 4/6 events warned, suppression reduces false alerts, not misses
   },
 ];
 
@@ -34,14 +34,14 @@ const COMPONENT_METRICS: ComponentMetric[] = [
   {
     component: "Perception",
     metric: "Detection latency",
-    description: "Per-frame YOLO inference time - CPU, no GPU acceleration",
+    description: "Per-frame YOLO inference time, CPU, no GPU acceleration",
     value: 62,
     unit: "ms",
   },
   {
     component: "Depth",
     metric: "Pipeline latency",
-    description: "Per-frame YOLO + Depth-Anything (CPU) - MPS/GPU needed for real-time",
+    description: "Per-frame YOLO + Depth-Anything (CPU), MPS/GPU needed for real-time",
     value: 2127,
     unit: "ms",
   },
@@ -55,7 +55,7 @@ const COMPONENT_METRICS: ComponentMetric[] = [
   {
     component: "Alert system",
     metric: "False alerts (baseline B)",
-    description: "False alerts without suppression - shows 94.9% reduction",
+    description: "False alerts without suppression, shows 94.9% reduction",
     value: 314,
     unit: "",
   },
@@ -90,12 +90,12 @@ const COMPONENT_METRICS: ComponentMetric[] = [
 ];
 
 const LIMITATIONS = [
-  "Depth model (Depth-Anything) runs at ~2,127ms/frame on CPU - real-time use requires MPS or CUDA. YOLO alone runs at 62ms/frame on the same hardware.",
-  "Kitchen video scored 0% success - YOLO did not detect 'refrigerator' or 'dining table' at the annotated timestamps. Annotation labels must match COCO class names that actually appear.",
-  "Alert suppression maintains recall (66.7%) but does not improve it - memory context currently has no measurable impact on which obstacles get detected.",
+  "Depth model (Depth-Anything) runs at ~2,127ms/frame on CPU, real-time use requires MPS or CUDA. YOLO alone runs at 62ms/frame on the same hardware.",
+  "Kitchen video scored 0% success. YOLO did not detect 'refrigerator' or 'dining table' at the annotated timestamps. Annotation labels must match COCO class names that actually appear.",
+  "Alert suppression maintains recall (66.7%) but does not improve it, memory context currently has no measurable impact on which obstacles get detected.",
   "Depth estimates are relative, not metric-calibrated. The relative→metric scale conversion is a heuristic (see run_ablation.py depth wrapper).",
-  "Detection accuracy degrades below FRAME_MIN_BLUR_VARIANCE = 3.0 or FRAME_MIN_BRIGHTNESS = 20.0 - tuned for stock footage, may need adjustment for dim rooms.",
-  "Not a medical device. MemoryNav augments user judgment - it does not replace mobility aids, white canes, or professional guidance.",
+  "Detection accuracy degrades below FRAME_MIN_BLUR_VARIANCE = 3.0 or FRAME_MIN_BRIGHTNESS = 20.0, tuned for stock footage, may need adjustment for dim rooms.",
+  "Not a medical device. MemoryNav augments user judgment, it does not replace mobility aids, white canes, or professional guidance.",
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -135,7 +135,7 @@ export default function EvaluationPage() {
         <p className="mt-2 max-w-2xl text-sm text-[#8B95A1]">
           All values measured on 4 indoor walking clips (bedroom, kitchen, hallway,
           living room), every 5th frame. All four pipeline components confirmed{" "}
-          <span className="font-mono text-[#5EEAD4]">REAL</span> - no stubs.
+          <span className="font-mono text-[#5EEAD4]">REAL</span>, no stubs.
           Generated 2026-06-24.
         </p>
       </header>
@@ -159,7 +159,7 @@ export default function EvaluationPage() {
       {/* ── Ablation study ───────────────────────────────────────────────── */}
       <section className="mb-10">
         <h2 className="mb-3 font-mono text-xs uppercase tracking-wider text-[#565E66]">
-          Ablation study - navigation success rate
+          Ablation study, navigation success rate
         </h2>
         <div className="overflow-hidden rounded-xl border border-[#262B2F]">
           <table className="w-full text-left text-sm">
@@ -237,9 +237,9 @@ export default function EvaluationPage() {
             "4 stock-footage indoor walking clips (Pexels/Pixabay CC0): bedroom, kitchen, hallway, living room.",
             "Ground-truth annotation: per-video .json sidecars with obstacle label and critical_time_s (last moment a warning would be useful).",
             "A configuration 'succeeds' on an event if it raises a HIGH-risk alert at or before critical_time_s.",
-            "Hallway video has empty events [] - contributes only to false-alert measurement.",
+            "Hallway video has empty events [], contributes only to false-alert measurement.",
             "Every 5th frame sampled (--sample-every 5) to keep Depth-Anything tractable on CPU.",
-            "All 4 pipeline components confirmed REAL via component banner - no stub fallbacks used.",
+            "All 4 pipeline components confirmed REAL via component banner, no stub fallbacks used.",
           ].map((point) => (
             <li key={point} className="flex gap-3">
               <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-[#565E66]" />

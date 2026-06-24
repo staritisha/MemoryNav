@@ -1,7 +1,7 @@
 // frontend/src/components/PipelineStatus.tsx
 // The architecture, alive. Renders the 7 processing stages a frame actually
 // passes through (Quality -> Detect -> Depth -> Risk -> Memory -> Alert ->
-// Voice) as connected nodes. This is not a decorative diagram - feed it
+// Voice) as connected nodes. This is not a decorative diagram, feed it
 // real per-frame status and it becomes the system's own telemetry.
 
 import type { PipelineStage, PipelineStageId, PipelineStageStatus } from "@/lib/types";
