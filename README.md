@@ -1,6 +1,6 @@
 # MemoryNav
 
-**Research prototype — memory-augmented spatial obstacle detection for indoor navigation**
+**Research prototype - memory-augmented spatial obstacle detection for indoor navigation**
 
 > Investigating whether persistent spatial memory and temporal alert suppression can reduce alert fatigue in real-time indoor obstacle detection. Edge AI, fully offline, runs on consumer hardware (Apple M2 MPS).
 
@@ -13,7 +13,7 @@
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-vector%20store-orange)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-Inspired by **WalkVLM** (2024) · **VISA** (2025) · **VIALM Survey** (2024) · **NavSpace** (ICRA 2026) — see [Research Motivation](#5-research-motivation).
+Inspired by **WalkVLM** (2024) · **VISA** (2025) · **VIALM Survey** (2024) · **NavSpace** (ICRA 2026) - see [Research Motivation](#5-research-motivation).
 
 > **Scope disclosure:** This is a solo student research prototype. It has not been tested with visually impaired users, has not undergone safety or clinical evaluation, and is not suitable for real navigation use in its current form. It is presented as a systems research project demonstrating a novel combination of techniques.
 
@@ -28,7 +28,7 @@ Inspired by **WalkVLM** (2024) · **VISA** (2025) · **VIALM Survey** (2024) · 
 ## 2. Demo
 
 <p align="center">
-  <img src="docs/demo.gif" alt="MemoryNav live demo — detection, risk scoring, and spoken alert" width="720">
+  <img src="docs/demo.gif" alt="MemoryNav live demo - detection, risk scoring, and spoken alert" width="720">
   <br>
   <em>Live dashboard: YOLOv8 detection + Depth-Anything distance + WalkVLM-style suppression in action.</em>
 </p>
@@ -48,7 +48,7 @@ Inspired by **WalkVLM** (2024) · **VISA** (2025) · **VIALM Survey** (2024) · 
 
 The [ablation study](#7-results) below measures this directly across four conditions on real video footage.
 
-**Background:** Prior assistive navigation research (WalkVLM 2024, VISA 2025) identifies alert fatigue — repeating the same warning every second — as the primary usability failure in detection-based navigation systems. MemoryNav tests one approach to this problem at prototype scale.
+**Background:** Prior assistive navigation research (WalkVLM 2024, VISA 2025) identifies alert fatigue - repeating the same warning every second - as the primary usability failure in detection-based navigation systems. MemoryNav tests one approach to this problem at prototype scale.
 
 ---
 
@@ -113,20 +113,20 @@ flowchart TD
 | 1 | **Perception** | YOLOv8-nano + Depth-Anything + EasyOCR, gated by frame quality |
 | 2 | **Risk Engine** | `score = (1/d) × motion × context` → LOW / MEDIUM / HIGH |
 | 3 | **Memory (RAG)** | ChromaDB + sentence-transformers retrieve relevant home context per frame |
-| 4 | **Alert Manager** | 4s temporal suppression window — only speaks when something meaningfully changed |
+| 4 | **Alert Manager** | 4s temporal suppression window - only speaks when something meaningfully changed |
 | 5 | **Voice Interface** | Whisper small (STT) + Kokoro-82M neural TTS (offline) |
-| 6 | **LLM Layer (optional)** | GPT-4o Vision for on-demand complex queries — never in the navigation path |
+| 6 | **LLM Layer (optional)** | GPT-4o Vision for on-demand complex queries - never in the navigation path |
 
 ---
 
 ## 7. Results
 
-> **Methodology:** Measured on 4 royalty-free indoor walking clips (bedroom, kitchen, hallway, living room). Every 5th frame sampled. All pipeline components are real — no stubs. Regenerate with:
+> **Methodology:** Measured on 4 royalty-free indoor walking clips (bedroom, kitchen, hallway, living room). Every 5th frame sampled. All pipeline components are real - no stubs. Regenerate with:
 > ```bash
 > python evaluation/run_ablation.py --videos-dir evaluation/videos --out evaluation/results.json --sample-every 5
 > ```
 
-**Ablation study — obstacle warning rate across pipeline configurations:**
+**Ablation study - obstacle warning rate across pipeline configurations:**
 
 | Configuration | What's active | Warning rate | False alerts |
 |---|---|---|---|
@@ -134,7 +134,7 @@ flowchart TD
 | Baseline B: YOLO + Depth + Risk | Distance-aware scoring | **66.7%** (4/6 events) | 314 total |
 | **Full system: + Memory + Suppression** | Complete pipeline | **66.7%** (4/6 events) | **16 total** |
 
-**Key finding:** Adding depth+risk raises warning rate from 16.7% → 66.7% (+50pp). Adding memory+suppression maintains that recall while reducing false alerts by **94.9%** (314 → 16). This directly tests the research question — suppression does not hurt recall.
+**Key finding:** Adding depth+risk raises warning rate from 16.7% → 66.7% (+50pp). Adding memory+suppression maintains that recall while reducing false alerts by **94.9%** (314 → 16). This directly tests the research question - suppression does not hurt recall.
 
 **Per-component metrics:**
 
@@ -146,7 +146,7 @@ flowchart TD
 | Alert Suppression | Redundancy reduction | **94.9%** (314 → 16) |
 | Detection (fine-tuned) | mAP@50 on furniture dataset | **0.960** |
 
-**Honest caveat:** The ablation used 6 annotated obstacle events across 4 short clips. These numbers are directionally meaningful but not statistically robust — a proper evaluation would require a larger annotated dataset and user testing.
+**Honest caveat:** The ablation used 6 annotated obstacle events across 4 short clips. These numbers are directionally meaningful but not statistically robust - a proper evaluation would require a larger annotated dataset and user testing.
 
 ---
 
@@ -189,7 +189,7 @@ Follows Privacy-by-Design principles (Cavoukian, 2009), formalized under GDPR Ar
 
 ## 10. Installation
 
-### Option A — Docker (recommended)
+### Option A - Docker (recommended)
 
 ```bash
 git clone https://github.com/<your-username>/memorynav.git
@@ -201,7 +201,7 @@ Frontend → http://localhost:3000 · Backend → http://localhost:8000
 
 Note: Docker runs on CPU. For MPS acceleration on Apple Silicon, use Option B.
 
-### Option B — Manual setup
+### Option B - Manual setup
 
 **Backend:**
 
@@ -239,7 +239,7 @@ The Dashboard shows the camera feed with bounding boxes, real-time risk level, r
 Set speech rate, language, and suppression window on the Preferences page.
 
 **4. Ask a question**
-Say "what's in front of me?" — Whisper transcribes it, the system answers from short-term session memory and ChromaDB. Complex scene descriptions optionally route to GPT-4o Vision.
+Say "what's in front of me?" - Whisper transcribes it, the system answers from short-term session memory and ChromaDB. Complex scene descriptions optionally route to GPT-4o Vision.
 
 **5. Run the ablation**
 ```bash
@@ -267,18 +267,18 @@ These are real limitations, not hedges:
 
 | Direction | Why it matters |
 |---|---|
-| User testing with target population | The obvious missing piece — none of the current metrics involve real users |
+| User testing with target population | The obvious missing piece - none of the current metrics involve real users |
 | Real-time depth on MPS | Depth-Anything bottleneck is 2,127ms on CPU; MPS could bring this to ~200ms |
 | Larger ablation dataset | 6 events is not enough for statistically meaningful claims |
-| Semantic spatial mapping | Move from object-level memory to a room graph — enables route planning |
-| Multilingual voice interface | Whisper supports Hindi, Tamil, Marathi — relevant for Indian accessibility use cases |
+| Semantic spatial mapping | Move from object-level memory to a room graph - enables route planning |
+| Multilingual voice interface | Whisper supports Hindi, Tamil, Marathi - relevant for Indian accessibility use cases |
 | Wearable / smart glasses form factor | Removes the chest-mount constraint |
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
 
 ## Acknowledgments
 

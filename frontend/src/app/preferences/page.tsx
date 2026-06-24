@@ -15,10 +15,10 @@ const LANGUAGES = [
 
 const MOBILITY_FLAGS = [
   { flag: "bad_knee",       label: "Bad knee",       hint: "+45% risk weight for floor obstacles" },
-  { flag: "uses_walker",    label: "Uses walker",     hint: "+55% — wider clearance needed" },
-  { flag: "low_vision",     label: "Low vision",      hint: "+35% — earlier warnings" },
-  { flag: "wheelchair",     label: "Wheelchair",      hint: "+60% — most sensitive" },
-  { flag: "balance_issues", label: "Balance issues",  hint: "+50% — step / edge hazards" },
+  { flag: "uses_walker",    label: "Uses walker",     hint: "+55% - wider clearance needed" },
+  { flag: "low_vision",     label: "Low vision",      hint: "+35% - earlier warnings" },
+  { flag: "wheelchair",     label: "Wheelchair",      hint: "+60% - most sensitive" },
+  { flag: "balance_issues", label: "Balance issues",  hint: "+50% - step / edge hazards" },
 ];
 
 const DEFAULTS: UserPreferences = {
@@ -159,7 +159,7 @@ export default function PreferencesPage() {
           </select>
         </div>
 
-        {/* Mobility flags — affect Risk Engine context_weight */}
+        {/* Mobility flags - affect Risk Engine context_weight */}
         <div>
           <label className="mb-3 block text-sm font-medium text-[#E7ECEE]">
             Mobility context

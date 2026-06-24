@@ -156,7 +156,7 @@ export default function LiveFeed({
           }}
         />
 
-        {/* Corner brackets — viewfinder framing, recolors with risk level */}
+        {/* Corner brackets - viewfinder framing, recolors with risk level */}
         {(["tl", "tr", "bl", "br"] as const).map((corner) => (
           <span
             key={corner}
@@ -191,7 +191,7 @@ export default function LiveFeed({
         {cameraError && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0A0C0E] px-6 text-center">
             <p className="font-mono text-sm text-[#FF5C5C]">
-              Camera unavailable — {cameraError}
+              Camera unavailable - {cameraError}
             </p>
           </div>
         )}

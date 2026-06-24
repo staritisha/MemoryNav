@@ -1,5 +1,5 @@
 // frontend/src/app/page.tsx
-// Public landing page — no backend connection required.
+// Public landing page - no backend connection required.
 // Shows the project pitch, architecture, real ablation numbers, and CTAs.
 
 import Link from "next/link";
@@ -26,9 +26,9 @@ const PIPELINE_STEPS = [
 ];
 
 const RESEARCH_REFS = [
-  { short: "WalkVLM", year: "2024", note: "Temporal alert suppression — MemoryNav's Alert Manager implements this directly.", href: "https://arxiv.org/abs/2412.20903" },
-  { short: "VISA",    year: "2025", note: "Holistic multi-layer indoor assistance — the structural blueprint for MemoryNav's pipeline.", href: "https://www.mdpi.com/2313-433X/11/1/9" },
-  { short: "NavSpace",year: "2026", note: "Personalized spatial memory as an open frontier — frames MemoryNav's future direction.", href: "https://arxiv.org/abs/2510.08173" },
+  { short: "WalkVLM", year: "2024", note: "Temporal alert suppression - MemoryNav's Alert Manager implements this directly.", href: "https://arxiv.org/abs/2412.20903" },
+  { short: "VISA",    year: "2025", note: "Holistic multi-layer indoor assistance - the structural blueprint for MemoryNav's pipeline.", href: "https://www.mdpi.com/2313-433X/11/1/9" },
+  { short: "NavSpace",year: "2026", note: "Personalized spatial memory as an open frontier - frames MemoryNav's future direction.", href: "https://arxiv.org/abs/2510.08173" },
 ];
 
 const TECH_BADGES = [
@@ -104,7 +104,7 @@ export default function LandingPage() {
 
           <p className="mt-5 max-w-2xl text-[#8B95A1]">
             Real-time obstacle detection, monocular depth estimation, and personalized
-            spatial memory — running fully offline on consumer hardware.
+            spatial memory - running fully offline on consumer hardware.
             Built for elderly and visually impaired users.
           </p>
 
@@ -161,7 +161,7 @@ export default function LandingPage() {
             <tbody className="divide-y divide-[#1A1E21]">
               {[
                 ["Be My Eyes / Seeing AI", "Requires internet and a human operator or cloud inference"],
-                ["Generic VLM assistants", "Verbose, causes alert fatigue — repeats the same warning every second"],
+                ["Generic VLM assistants", "Verbose, causes alert fatigue - repeats the same warning every second"],
                 ["Custom hardware devices", "Expensive, inaccessible, requires technical setup"],
                 ["All of the above", "None retain persistent memory of the user's specific home environment"],
               ].map(([sol, gap], i) => (
@@ -191,12 +191,12 @@ export default function LandingPage() {
         {/* Ablation bars */}
         <div className="mt-6 rounded-xl border border-[#262B2F] bg-[#0E1113] p-6">
           <p className="mb-5 font-mono text-xs uppercase tracking-widest text-[#565E66]">
-            Ablation study — navigation success rate
+            Ablation study - navigation success rate
           </p>
           <div className="space-y-4">
-            <AblationBar rate={METRICS.baselineA.rate}  label="A — YOLO only (no depth, no memory)" />
-            <AblationBar rate={METRICS.baselineB.rate}  label="B — + Depth + Risk scoring" />
-            <AblationBar rate={METRICS.fullSystem.rate} label="Full system — + Memory + Suppression" isHighlighted />
+            <AblationBar rate={METRICS.baselineA.rate}  label="A - YOLO only (no depth, no memory)" />
+            <AblationBar rate={METRICS.baselineB.rate}  label="B - + Depth + Risk scoring" />
+            <AblationBar rate={METRICS.fullSystem.rate} label="Full system - + Memory + Suppression" isHighlighted />
           </div>
           <p className="mt-5 font-mono text-[11px] text-[#565E66]">
             Adding depth+risk: 16.7% → 66.7% (+50pp). Memory+suppression: maintains recall, cuts false alerts by 94.9%.
@@ -255,17 +255,17 @@ export default function LandingPage() {
             {
               icon: "◈",
               title: "Persistent home memory",
-              body: "ChromaDB + sentence-transformers stores room layout across sessions. Retrievs the right context at inference time — not generic descriptions.",
+              body: "ChromaDB + sentence-transformers stores room layout across sessions. Retrievs the right context at inference time - not generic descriptions.",
             },
             {
               icon: "◎",
               title: "Temporal alert suppression",
-              body: "WalkVLM-inspired 4-second suppression window. Same chair — silence. Reduces alert fatigue, the #1 usability failure in prior systems.",
+              body: "WalkVLM-inspired 4-second suppression window. Same chair - silence. Reduces alert fatigue, the #1 usability failure in prior systems.",
             },
             {
               icon: "◉",
               title: "Fully offline, fully private",
-              body: "YOLO, Depth-Anything, Whisper, ChromaDB — all on-device. Camera frames never leave the hardware. Privacy-by-Design, GDPR Art. 25.",
+              body: "YOLO, Depth-Anything, Whisper, ChromaDB - all on-device. Camera frames never leave the hardware. Privacy-by-Design, GDPR Art. 25.",
             },
           ].map((card) => (
             <div key={card.title} className="rounded-xl border border-[#262B2F] bg-[#0E1113] p-6">

@@ -59,7 +59,7 @@ export default function SetupPage() {
         <p className="mt-2 text-sm text-[#8B95A1]">
           Each entry below is embedded and stored as a memory node. At
           inference time, the risk engine retrieves the most relevant node
-          for what&apos;s in frame — &ldquo;chair ahead, near where you said
+          for what&apos;s in frame - &ldquo;chair ahead, near where you said
           the rug is.&rdquo;
         </p>
       </header>

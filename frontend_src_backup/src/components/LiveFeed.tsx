@@ -140,7 +140,7 @@ export default function LiveFeed({
         />
         <canvas ref={captureCanvasRef} className="hidden" />
 
-        {/* Corner brackets — signature framing element, evokes a viewfinder/sensor */}
+        {/* Corner brackets - signature framing element, evokes a viewfinder/sensor */}
         {(["tl", "tr", "bl", "br"] as const).map((corner) => (
           <span
             key={corner}
@@ -170,7 +170,7 @@ export default function LiveFeed({
         {cameraError && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0F2E22] px-6 text-center">
             <p className="font-mono text-sm text-[#FBE6E6]">
-              Camera unavailable — {cameraError}
+              Camera unavailable - {cameraError}
             </p>
           </div>
         )}

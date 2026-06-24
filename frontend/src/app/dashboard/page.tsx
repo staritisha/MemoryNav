@@ -46,7 +46,7 @@ export default function DashboardPage() {
       message = frame.spoke;
       tone = "ghost";
     } else if (frame.suppressed) {
-      message = frame.suppressionReason ?? "Alert suppressed — within suppression window";
+      message = frame.suppressionReason ?? "Alert suppressed - within suppression window";
       tone = "suppressed";
     } else if (frame.riskLevel === "HIGH" && frame.riskReason) {
       message = frame.riskReason;
@@ -54,7 +54,7 @@ export default function DashboardPage() {
     } else {
       message =
         frame.riskReason ??
-        `${frame.riskLevel} risk — ${frame.detections.length} object(s) in view`;
+        `${frame.riskLevel} risk - ${frame.detections.length} object(s) in view`;
       tone = "info";
     }
 
@@ -143,7 +143,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Memory context banner — shows when ChromaDB boost fired */}
+          {/* Memory context banner - shows when ChromaDB boost fired */}
           {frame?.memoryContext && (
             <div className="mt-3 rounded-lg border border-[#818CF8]/30 bg-[#818CF8]/08 px-4 py-3">
               <p className="font-mono text-xs text-[#818CF8]">◈ memory context</p>
