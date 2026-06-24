@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import PipelineStatus from "./PipelineStatus";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", hint: "Live view" },
+  { href: "/", label: "Home", hint: "Landing page" },
+  { href: "/dashboard", label: "Dashboard", hint: "Live view" },
   { href: "/setup", label: "Setup", hint: "Teach your home" },
   { href: "/preferences", label: "Preferences", hint: "Voice & alerts" },
   { href: "/evaluation", label: "Evaluation", hint: "Ablation & metrics" },

@@ -1,7 +1,7 @@
 // frontend/src/app/layout.tsx
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
-import Sidebar from "@/components/Sidebar";
+import AppShell from "@/components/AppShell";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -35,10 +35,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} flex min-h-screen bg-[#0A0C0E] font-body text-[#E7ECEE] antialiased`}
+        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} min-h-screen bg-[#0A0C0E] font-body text-[#E7ECEE] antialiased`}
       >
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto px-10 py-8">{children}</main>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
