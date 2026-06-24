@@ -68,6 +68,7 @@ def detect_device() -> str:
 
 
 class Settings(BaseSettings):
+    LOG_LEVEL: str = "INFO"
     """
     Application-wide settings, grouped by the module that owns them
     (matches Section 3.2 of the architecture doc).

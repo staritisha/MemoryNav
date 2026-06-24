@@ -50,7 +50,7 @@ from app.perception.depth          import DepthEstimator
 from app.perception.ocr            import OCRReader
 from app.memory_modules.long_term  import LongTermMemory
 from app.memory_modules.preferences import PreferencesStore
-from app.memory_modules.short_term  import ShortTermMemory
+from app.memory_modules.short_term  import SessionStore as ShortTermMemory
 from app.alerts.temporal_manager    import TemporalAlertManager
 from app.voice.tts                  import TTSEngine
 from app.voice.stt                  import WhisperSTT
