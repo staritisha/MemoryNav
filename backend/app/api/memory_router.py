@@ -150,6 +150,17 @@ class DeleteResponse(BaseModel):
 router = APIRouter(prefix="/memory", tags=["memory"])
 
 
+@router.get("/spatial-map", summary="Current spatial room map")
+async def get_spatial_map_route() -> dict:
+    """Returns the live spatial room map from the running pipeline."""
+    try:
+        from app.api.ws_stream import get_state
+        state = get_state()
+        return state.spatial_map.snapshot()
+    except Exception:
+        return {"current_room": "Unknown", "rooms": {}}
+
+
 @router.get("", response_model=ListMemoryResponse, summary="List or search memories")
 async def list_or_search_memories(
     q: Optional[str] = Query(None, description="Semantic search query. Omit to list everything."),
@@ -273,12 +284,3 @@ async def clear_all_memories(
     await loop.run_in_executor(_EXECUTOR, memory.clear)
     logger.warning("DELETE /memory?confirm=true — wiped %d entries.", count_before)
     return DeleteResponse(deleted_count=count_before, message=f"Cleared {count_before} memories.")
-
-@router.get("/spatial-map")
-async def get_spatial_map():
-    """Returns the current spatial room map as JSON."""
-    from app.api.ws_stream import get_pipeline_state
-    state = get_pipeline_state()
-    if state is None or state.spatial_map is None:
-        return {"map": {}}
-    return {"map": state.spatial_map.get_map()}

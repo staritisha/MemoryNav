@@ -145,8 +145,8 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------- #
     # Module 5 — Voice Interface
     # ------------------------------------------------------------------- #
-    WHISPER_MODEL_SIZE: Literal["tiny", "base", "small", "medium", "large"] = "base"
-    TTS_ENGINE: Literal["pyttsx3", "elevenlabs"] = "pyttsx3"
+    WHISPER_MODEL_SIZE: Literal["tiny", "base", "small", "medium", "large"] = "small"
+    TTS_ENGINE: Literal["pyttsx3", "kokoro", "elevenlabs"] = "kokoro"
     TTS_RATE_WPM: int = 175
     ELEVENLABS_API_KEY: Optional[str] = None
     ELEVENLABS_VOICE_ID: Optional[str] = None
@@ -168,10 +168,10 @@ class Settings(BaseSettings):
     ALLOW_CLOUD_SERVICES: bool = False
 
     @property
-    def effective_tts_engine(self) -> Literal["pyttsx3", "elevenlabs"]:
+    def effective_tts_engine(self) -> Literal["pyttsx3", "kokoro", "elevenlabs"]:
         """Falls back to offline TTS if cloud services are disabled."""
         if self.TTS_ENGINE == "elevenlabs" and not self.ALLOW_CLOUD_SERVICES:
-            return "pyttsx3"
+            return "kokoro"
         return self.TTS_ENGINE
 
     @property

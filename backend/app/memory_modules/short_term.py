@@ -272,6 +272,43 @@ class SessionStore:
                 ],
             }
 
+    def get_recent_summary(self) -> Optional[str]:
+        """
+        Return a plain-text summary of the most recent obstacles in the
+        session window — e.g. "chair at 0.8m, table at 2.3m".
+
+        Returns None when no obstacles have been recorded yet (or all
+        have expired from the window).  Used by voice_router.py to
+        inject short-term context into the obstacle/scene answer without
+        coupling the router to the internal ObstacleEvent structure.
+        """
+        events = self.recent_obstacles()
+        if not events:
+            return None
+        # Sort most-recent first, deduplicate class names to one entry each
+        seen: Dict[str, ObstacleEvent] = {}
+        for e in sorted(events, key=lambda ev: ev.timestamp, reverse=True):
+            seen.setdefault(e.class_name, e)
+        parts = [
+            f"{e.class_name} at {e.distance_metres:.1f}m"
+            for e in sorted(seen.values(), key=lambda ev: ev.distance_metres)
+        ]
+        return ", ".join(parts) if parts else None
+
+    def record_voice_query(self, question: str, answer: str) -> None:
+        """
+        Log a voice interaction into the session path log so the
+        temporal suppression layer and future queries within this session
+        can see it.
+
+        Used by voice_router.py to close the feedback loop without
+        coupling it to the internal PathEvent structure.
+        """
+        self.record_path_event(
+            description=f"voice: {question[:80]}",
+            metadata={"answer": answer[:120]},
+        )
+
     def clear(self) -> None:
         """Wipes all three stores — e.g. on explicit session reset."""
         with self._lock:

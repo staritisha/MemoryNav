@@ -210,7 +210,7 @@ class _ObjectState:
         last_warning_time   → self.last_warned_at
     """
     bucket:         DistanceBucket
-    last_warned_at: float = field(default_factory=time.monotonic)
+    last_warned_at: float = field(default_factory=lambda: time.monotonic())
     warn_count:     int   = 0   # for ablation study: total times this class was spoken
 
     def seconds_since_warning(self) -> float:
@@ -430,6 +430,7 @@ class TemporalAlertManager:
             self._states[key].update(bucket)
         else:
             self._states[key] = _ObjectState(bucket=bucket)
+            self._states[key].update(bucket)   # initialise warn_count to 1
 
         speech = _build_speech(assessment)
         self._total_spoken += 1

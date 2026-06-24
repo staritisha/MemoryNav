@@ -169,6 +169,28 @@ class LongTermMemory:
             for doc_id, text, distance, meta in zip(ids, documents, distances, metadatas)
         ]
 
+    def list_all(self) -> List["MemoryResult"]:
+        """
+        Returns every stored memory entry (unranked).
+        Used by the REST API to populate the Setup page list.
+        """
+        count = self._collection.count()
+        if count == 0:
+            return []
+
+        results = self._collection.get(
+            include=["documents", "metadatas"],
+            limit=count,
+        )
+        ids       = results.get("ids", [])
+        documents = results.get("documents", [])
+        metadatas = results.get("metadatas", [])
+
+        return [
+            MemoryResult(id=doc_id, text=text, metadata=meta or {}, distance=0.0)
+            for doc_id, text, meta in zip(ids, documents, metadatas)
+        ]
+
     def delete(self, memory_id: str) -> None:
         """Removes a single memory by id."""
         self._collection.delete(ids=[memory_id])

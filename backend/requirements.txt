@@ -73,6 +73,8 @@ pyttsx3==2.99                      # [✓] offline TTS; wraps NSSpeechSynthesize
 openai-whisper==20250625           # [✓] confirmed from pypistats Jun 2025 release
 easyocr==1.7.2                     # [✓] sign/label OCR in the perception layer
                                    #     NOTE: install torch first (see above)
+kokoro==0.9.4                      # [✓] Kokoro-82M neural TTS — natural offline voice
+sounddevice==0.5.1                 # [✓] audio playback for Kokoro (PortAudio wrapper)
 
 
 # ── Cloud TTS (optional, requires ALLOW_CLOUD_SERVICES=true in .env) ─────────

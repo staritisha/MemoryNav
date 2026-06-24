@@ -2,34 +2,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getPrefs, updatePrefs } from "@/lib/api";
+import { getPrefs, updatePrefs, addMobilityFlag, removeMobilityFlag } from "@/lib/api";
 import type { UserPreferences } from "@/lib/types";
 
 const LANGUAGES = [
-  { value: "en-US", label: "English (US)" },
-  { value: "en-GB", label: "English (UK)" },
-  { value: "hi-IN", label: "Hindi" },
-  { value: "es-ES", label: "Spanish" },
+  { value: "en", label: "English" },
+  { value: "hi", label: "Hindi" },
+  { value: "es", label: "Spanish" },
+  { value: "ta", label: "Tamil" },
+  { value: "mr", label: "Marathi" },
 ];
 
-const ALERT_OPTIONS: { value: UserPreferences["alertFrequency"]; label: string; hint: string }[] = [
-  { value: "ALL", label: "All detections", hint: "Speak every change in view" },
-  { value: "MEDIUM_AND_UP", label: "Medium and up", hint: "Skip low-risk chatter" },
-  { value: "HIGH_ONLY", label: "High risk only", hint: "Only urgent alerts" },
+const MOBILITY_FLAGS = [
+  { flag: "bad_knee",       label: "Bad knee",       hint: "+45% risk weight for floor obstacles" },
+  { flag: "uses_walker",    label: "Uses walker",     hint: "+55% — wider clearance needed" },
+  { flag: "low_vision",     label: "Low vision",      hint: "+35% — earlier warnings" },
+  { flag: "wheelchair",     label: "Wheelchair",      hint: "+60% — most sensitive" },
+  { flag: "balance_issues", label: "Balance issues",  hint: "+50% — step / edge hazards" },
 ];
 
 const DEFAULTS: UserPreferences = {
-  speechSpeed: 1,
-  language: "en-US",
-  alertFrequency: "MEDIUM_AND_UP",
+  user_id: "default_user",
+  speech_rate_wpm: 175,
+  language: "en",
+  mobility_flags: [],
+  alert_suppression_seconds: 4.0,
   audioEnabled: true,
 };
 
 export default function PreferencesPage() {
-  const [prefs, setPrefs] = useState<UserPreferences>(DEFAULTS);
+  const [prefs, setPrefs]     = useState<UserPreferences>(DEFAULTS);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving]   = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
 
   useEffect(() => {
     getPrefs()
@@ -40,14 +46,27 @@ export default function PreferencesPage() {
 
   async function handleSave() {
     setSaving(true);
+    setError(null);
     try {
       const updated = await updatePrefs(prefs);
       setPrefs(updated);
       setSavedAt(new Date().toLocaleTimeString());
     } catch (err) {
-      console.error("Failed to save preferences", err);
+      setError(err instanceof Error ? err.message : "Failed to save.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function toggleFlag(flag: string) {
+    const has = prefs.mobility_flags.includes(flag);
+    try {
+      const updated = has
+        ? await removeMobilityFlag(flag)
+        : await addMobilityFlag(flag);
+      setPrefs(updated);
+    } catch (err) {
+      console.error("Failed to toggle flag", err);
     }
   }
 
@@ -66,35 +85,60 @@ export default function PreferencesPage() {
           User preference memory · SQLite
         </p>
         <h1 className="mt-1 font-display text-2xl font-semibold text-[#E7ECEE]">
-          Voice & alerts
+          Voice &amp; alerts
         </h1>
       </header>
 
       <div className="space-y-7 rounded-lg border border-[#262B2F] bg-[#14181B] p-6">
-        {/* Speech speed */}
+
+        {/* Speech rate */}
         <div>
           <label className="mb-2 flex items-center justify-between text-sm font-medium text-[#E7ECEE]">
-            Speech speed
+            Speech rate
             <span className="font-mono text-xs text-[#5EEAD4]">
-              {prefs.speechSpeed.toFixed(2)}x
+              {prefs.speech_rate_wpm} WPM
             </span>
           </label>
           <input
             type="range"
-            min={0.5}
-            max={2}
-            step={0.05}
-            value={prefs.speechSpeed}
+            min={80}
+            max={300}
+            step={5}
+            value={prefs.speech_rate_wpm}
             onChange={(e) =>
-              setPrefs((p) => ({ ...p, speechSpeed: Number(e.target.value) }))
+              setPrefs((p) => ({ ...p, speech_rate_wpm: Number(e.target.value) }))
             }
             className="w-full"
           />
           <div className="flex justify-between font-mono text-[10px] uppercase tracking-wider text-[#565E66]">
-            <span>Slower</span>
-            <span>Normal</span>
-            <span>Faster</span>
+            <span>80 wpm</span>
+            <span>175 wpm</span>
+            <span>300 wpm</span>
           </div>
+        </div>
+
+        {/* Alert suppression window */}
+        <div>
+          <label className="mb-2 flex items-center justify-between text-sm font-medium text-[#E7ECEE]">
+            Alert suppression window
+            <span className="font-mono text-xs text-[#5EEAD4]">
+              {prefs.alert_suppression_seconds.toFixed(1)}s
+            </span>
+          </label>
+          <input
+            type="range"
+            min={1}
+            max={15}
+            step={0.5}
+            value={prefs.alert_suppression_seconds}
+            onChange={(e) =>
+              setPrefs((p) => ({ ...p, alert_suppression_seconds: Number(e.target.value) }))
+            }
+            className="w-full"
+          />
+          <p className="mt-1 font-mono text-[10px] text-[#565E66]">
+            Same obstacle won&apos;t repeat a warning for this many seconds (WalkVLM suppression)
+          </p>
         </div>
 
         {/* Language */}
@@ -115,46 +159,54 @@ export default function PreferencesPage() {
           </select>
         </div>
 
-        {/* Alert frequency */}
+        {/* Mobility flags — affect Risk Engine context_weight */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-[#E7ECEE]">
-            Alert frequency
+          <label className="mb-3 block text-sm font-medium text-[#E7ECEE]">
+            Mobility context
+            <span className="ml-2 font-mono text-[10px] text-[#565E66]">
+              affects risk scoring weights
+            </span>
           </label>
           <div className="space-y-2">
-            {ALERT_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className="flex cursor-pointer items-center justify-between rounded-md border px-4 py-3 transition"
-                style={{
-                  borderColor: prefs.alertFrequency === opt.value ? "#5EEAD4" : "#262B2F",
-                  backgroundColor:
-                    prefs.alertFrequency === opt.value ? "rgba(94,234,212,0.08)" : "#0E1113",
-                }}
-              >
-                <div>
-                  <p className="text-sm font-medium text-[#E7ECEE]">{opt.label}</p>
-                  <p className="font-mono text-[11px] text-[#565E66]">{opt.hint}</p>
-                </div>
-                <input
-                  type="radio"
-                  name="alertFrequency"
-                  value={opt.value}
-                  checked={prefs.alertFrequency === opt.value}
-                  onChange={() =>
-                    setPrefs((p) => ({ ...p, alertFrequency: opt.value }))
-                  }
-                />
-              </label>
-            ))}
+            {MOBILITY_FLAGS.map((item) => {
+              const active = prefs.mobility_flags.includes(item.flag);
+              return (
+                <button
+                  key={item.flag}
+                  type="button"
+                  onClick={() => toggleFlag(item.flag)}
+                  className="flex w-full items-center justify-between rounded-md border px-4 py-3 text-left transition"
+                  style={{
+                    borderColor: active ? "#5EEAD4" : "#262B2F",
+                    backgroundColor: active ? "rgba(94,234,212,0.08)" : "#0E1113",
+                  }}
+                >
+                  <div>
+                    <p className="text-sm font-medium text-[#E7ECEE]">{item.label}</p>
+                    <p className="font-mono text-[11px] text-[#565E66]">{item.hint}</p>
+                  </div>
+                  <span
+                    className="h-4 w-4 rounded-full border-2 transition"
+                    style={{
+                      borderColor: active ? "#5EEAD4" : "#565E66",
+                      backgroundColor: active ? "#5EEAD4" : "transparent",
+                    }}
+                  />
+                </button>
+              );
+            })}
           </div>
         </div>
+
       </div>
+
+      {error && (
+        <p className="mt-3 font-mono text-xs text-[#FF5C5C]">{error}</p>
+      )}
 
       <div className="mt-5 flex items-center justify-end gap-3">
         {savedAt && (
-          <span className="font-mono text-xs text-[#565E66]">
-            Saved at {savedAt}
-          </span>
+          <span className="font-mono text-xs text-[#565E66]">Saved at {savedAt}</span>
         )}
         <button
           onClick={handleSave}

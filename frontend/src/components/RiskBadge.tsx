@@ -46,7 +46,7 @@ export default function RiskBadge({
         />
       </span>
       {level}
-      {score !== undefined && (
+      {score != null && (
         <span className="text-[#8B95A1]">· {score.toFixed(2)}</span>
       )}
     </span>

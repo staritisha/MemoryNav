@@ -38,8 +38,8 @@ from app.alerts.temporal_manager import (
     TemporalAlertManager,
     bucket_for,
 )
-from app.risk.engine import compute_risk_score
-from app.risk.models import Detection, RiskAssessment, RiskLevel
+from app.risk.engine import compute_risk_score, RiskAssessment
+from app.risk.models import Detection, RiskLevel
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -48,9 +48,10 @@ from app.risk.models import Detection, RiskAssessment, RiskLevel
 
 # Representative distances for each risk/bucket tier (mirrors the
 # thresholds in temporal_manager.py: close < 0.7m, near < 2.0m, far >= 2.0m)
-DIST_CLOSE_HIGH = 0.5   # HIGH risk,   CLOSE bucket
-DIST_NEAR_MED   = 1.0   # MEDIUM risk, NEAR bucket
-DIST_FAR_LOW    = 3.0   # LOW risk,    FAR bucket
+# Risk thresholds (from config.py): HIGH > 0.55, MEDIUM 0.35-0.55, LOW <= 0.35
+DIST_CLOSE_HIGH = 0.5   # HIGH risk,   CLOSE bucket  (score=2.0)
+DIST_NEAR_MED   = 1.9   # MEDIUM risk, NEAR bucket   (score≈0.53, in 0.35–0.55 range, d < 2.0m)
+DIST_FAR_LOW    = 3.0   # LOW risk,    FAR bucket    (score≈0.33)
 
 
 def make_assessment(

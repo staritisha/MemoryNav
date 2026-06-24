@@ -1,0 +1,13 @@
+{
+  "video": "evaluation/videos/living_room_01.mp4",
+  "frames_total": 810,
+  "frames_passed_quality_gate": 810,
+  "quality_pass_rate_pct": 100.0,
+  "fps_effective": 14.0,
+  "avg_frame_latency_ms": 71.3,
+  "avg_detection_ms": 14.8,
+  "avg_depth_ms": 25.0,
+  "avg_memory_retrieval_ms": 0.3,
+  "avg_detections_per_frame": 5.4,
+  "max_detections_per_frame": 9
+}

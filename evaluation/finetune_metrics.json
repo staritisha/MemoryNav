@@ -1,19 +1,35 @@
 {
+  "version": "v2",
   "dataset": "LibreYOLO/furniture-ngpea (CC-BY-4.0)",
   "classes": [
     "Chair",
     "Sofa",
     "Table"
   ],
-  "epochs": 30,
-  "train_time_s": 5945.1,
+  "epochs": 50,
+  "device": "mps",
+  "augmentation": {
+    "mosaic": 1.0,
+    "mixup": 0.15,
+    "copy_paste": 0.1,
+    "hsv_v": 0.4,
+    "close_mosaic": 10
+  },
+  "train_time_s": 2014.5,
+  "train_time_min": 33.6,
   "baseline_pretrained": {
-    "mAP50": 0.005506912442396312,
-    "mAP50_95": 0.0037772657450076802
+    "mAP50": 0.0055,
+    "mAP50_95": 0.0038
   },
-  "finetuned": {
-    "mAP50": 0.9603531094271225,
-    "mAP50_95": 0.8270216460842328
+  "finetuned_v2": {
+    "mAP50": 0.9604,
+    "mAP50_95": 0.827
   },
-  "mAP50_improvement": 0.9548
+  "per_class_ap50": {
+    "Chair": 0.9276,
+    "Sofa": 0.9931,
+    "Table": null
+  },
+  "mAP50_improvement_vs_baseline": 0.9549,
+  "mAP50_improvement_vs_v1": 0.0
 }

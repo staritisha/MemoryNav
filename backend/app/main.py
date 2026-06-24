@@ -42,6 +42,7 @@ from app.config import settings
 from app.api.ws_stream import router as ws_router
 from app.api.memory_router import router as memory_router
 from app.api.preferences_router import router as preferences_router
+from app.api.voice_router import router as voice_router
 
 # ── Heavy modules loaded once in lifespan ─────────────────────────────────────
 from app.perception.detector       import Detector
@@ -118,7 +119,24 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # 4. Voice — Phase 5
     logger.info("[7/7] Loading TTS + Whisper STT …")
     app.state.tts_engine  = TTSEngine()
-    app.state.stt_engine  = WhisperSTT()
+    app.state.stt         = WhisperSTT()
+
+    # 5. Wire pipeline singleton (ws_stream) and init REST router singletons
+    from app.api.ws_stream import init_pipeline
+    from app.api.memory_router import init_memory
+    from app.api.preferences_router import init_preferences
+
+    logger.info("Initialising WS pipeline …")
+    app.state.pipeline = init_pipeline()
+
+    logger.info("Wiring memory router …")
+    init_memory(app.state.long_term_memory)
+
+    logger.info("Wiring preferences router …")
+    init_preferences(
+        store=app.state.preferences_store,
+        tts_engine=app.state.tts_engine,
+    )
 
     elapsed = time.monotonic() - t0
     logger.info("Startup complete in %.1f s — ready on %s:%s",
@@ -211,28 +229,37 @@ async def health() -> JSONResponse:
     Returns 200 only when every model is loaded and ready.
     Returns 503 if startup is still in progress or a model failed to load.
     """
-    modules = {
-        "detector":          hasattr(app.state, "detector"),
-        "depth_estimator":   hasattr(app.state, "depth_estimator"),
-        "ocr_reader":        hasattr(app.state, "ocr_reader"),
-        "long_term_memory":  hasattr(app.state, "long_term_memory"),
-        "preferences_store": hasattr(app.state, "preferences_store"),
-        "short_term_memory": hasattr(app.state, "short_term_memory"),
-        "alert_manager":     hasattr(app.state, "alert_manager"),
-        "tts_engine":        hasattr(app.state, "tts_engine"),
-        "stt_engine":        hasattr(app.state, "stt_engine"),
-    }
+    required = [
+        "detector",
+        "depth_estimator",
+        "ocr_reader",
+        "long_term_memory",
+        "preferences_store",
+        "alert_manager",
+        "tts_engine",
+        "stt",
+        "pipeline",   # the wired pipeline itself
+    ]
 
-    all_ready = all(modules.values())
-    status_code = 200 if all_ready else 503
+    missing = [m for m in required if not hasattr(app.state, m)]
+
+    if missing:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status":  "unhealthy",
+                "missing": missing,
+                "version": settings.APP_VERSION,
+                "device":  settings.device,
+            },
+        )
 
     return JSONResponse(
-        status_code=status_code,
+        status_code=200,
         content={
-            "status":  "ready" if all_ready else "starting",
+            "status":  "healthy",
             "version": settings.APP_VERSION,
             "device":  settings.device,
-            "modules": modules,
         },
     )
 
@@ -255,6 +282,6 @@ if __name__ == "__main__":
         "backend.app.main:app",
         host=settings.HOST,
         port=settings.PORT,
-        reload=settings.RELOAD,
+        workers=1,          # hardcoded — multiple workers = OOM on edge devices
         log_level=settings.LOG_LEVEL.lower(),
     )

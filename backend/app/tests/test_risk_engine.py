@@ -6,9 +6,9 @@ Verifies the core Risk Engine formula and threshold classification
 described in the architecture doc (Module 2):
 
     Risk Score = (1 / distance_metres) x motion_factor x user_context_weight
-    HIGH   if score > 0.7
-    MEDIUM if 0.4 < score <= 0.7
-    LOW    if score <= 0.4
+    HIGH   if score > 0.55  (RISK_HIGH_THRESHOLD in config.py)
+    MEDIUM if 0.35 < score <= 0.55  (RISK_MEDIUM_THRESHOLD in config.py)
+    LOW    if score <= 0.35
 
 Run:
     pytest backend/tests/test_risk_engine.py -v
@@ -48,15 +48,15 @@ def _detection_at(distance_metres: float, class_name: str = "obstacle") -> Detec
 # distance-only behavior.
 # --------------------------------------------------------------------------- #
 def test_close_obstacle_score_above_high_threshold():
-    """0.5m obstacle: 1/0.5 = 2.0, comfortably above the 0.7 HIGH threshold."""
+    """0.5m obstacle: 1/0.5 = 2.0, comfortably above the 0.55 HIGH threshold."""
     score = compute_risk_score(distance_metres=0.5)
-    assert score > 0.7
+    assert score > 0.55  # RISK_HIGH_THRESHOLD
 
 
 def test_far_obstacle_score_below_medium_threshold():
-    """3m obstacle: 1/3 = 0.33, below the 0.4 MEDIUM/LOW threshold."""
+    """3m obstacle: 1/3 = 0.33, below the 0.35 MEDIUM/LOW threshold."""
     score = compute_risk_score(distance_metres=3.0)
-    assert score < 0.4
+    assert score < 0.35  # RISK_MEDIUM_THRESHOLD
 
 
 def test_close_obstacle_classified_high():
@@ -81,9 +81,9 @@ def test_score_increases_as_distance_decreases():
 
 
 def test_medium_band_between_thresholds():
-    """Distance chosen so 1/d ~= 0.55, strictly between the 0.4 and 0.7
+    """Distance chosen so 1/d ~= 0.45, strictly between the 0.35 and 0.55
     thresholds -> should land in MEDIUM, not HIGH or LOW."""
-    assessment = assess_risk(_detection_at(1.818))
+    assessment = assess_risk(_detection_at(2.22))
     assert assessment.level == RiskLevel.MEDIUM
     assert assessment.action == "queue"
 
@@ -95,7 +95,7 @@ def test_zero_distance_does_not_raise_and_is_high_risk():
     """Should floor at _MIN_DISTANCE_METRES, not divide by zero."""
     score = compute_risk_score(distance_metres=0.0)
     assert math.isfinite(score)
-    assert score > 0.7
+    assert score > 0.55  # RISK_HIGH_THRESHOLD
 
 
 def test_nan_distance_is_treated_as_maximally_risky():

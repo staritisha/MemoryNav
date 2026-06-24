@@ -316,50 +316,79 @@ def _run_pipeline_sync(
     for rd in risk_detections:
         state.session.record_obstacle_detection(rd)
 
-    # 12. Serialize
+    # 12. Serialize — shape matches frontend types.ts exactly:
+    #   Detection: {id, label, confidence, box:{x,y,width,height}, distanceMeters}
+    #   DetectionFrame: {timestamp, detections, riskLevel, riskScore, riskReason,
+    #                    suppressed, suppressionReason, latencyMs,
+    #                    spokeGhost, memoryContext, spatialMap, suppressionStats}
     memory_context: Optional[str] = None
     if assessments and assessments[0].context_result:
         memory_context = assessments[0].context_result.spatial_memory
 
+    dominant_score = round(dominant.score, 3) if dominant else None
+    dominant_reason: Optional[str] = None
+    if dominant:
+        dist_str = (
+            f"{dominant.detection.distance_metres:.1f}m"
+            if not np.isnan(dominant.detection.distance_metres) else "unknown distance"
+        )
+        dominant_reason = (
+            f"{dominant.detection.class_name} {dist_str} — "
+            f"{dominant.level.value} risk (score {dominant.score:.2f})"
+        )
+        if memory_context:
+            dominant_reason += f" · memory: {memory_context}"
+
+    latency_ms = round((time.time() - ts) * 1000, 1)
+
+    def _make_detection_dict(a, frame_shape) -> dict:
+        h, w = frame_shape[:2] if frame_shape else (480, 640)
+        x1, y1, x2, y2 = a.detection.bbox
+        dist = a.detection.distance_metres
+        return {
+            "id":             f"{a.detection.class_name}_{x1}_{y1}_{state.frame_counter}",
+            "label":          a.detection.class_name,
+            "confidence":     round(a.detection.confidence, 3),
+            "box": {
+                "x":      round(x1 / w, 4),
+                "y":      round(y1 / h, 4),
+                "width":  round((x2 - x1) / w, 4),
+                "height": round((y2 - y1) / h, 4),
+            },
+            "distanceMeters": round(dist, 3) if not np.isnan(dist) else None,
+            # extra telemetry (not in frontend types but won't break them)
+            "riskScore":     round(a.score, 3),
+            "riskLevel":     a.level.value,
+            "motionTrend":   state.session.motion_trend(a.detection.class_name),
+            "isConfident":   a.detection.confidence >= settings.YOLO_CONFIDENCE_GATE,
+            "contextWeight": (
+                round(a.context_result.final_weight, 3) if a.context_result else None
+            ),
+            "spatialMemory": (
+                a.context_result.spatial_memory if a.context_result else None
+            ),
+        }
+
+    frame_shape = frame.shape if frame is not None else None
+
     return {
-        "frame_id": frame_id,
-        "ts": ts,
-        "status": "ok",
-        "quality": {
-            "ok": True, "issue": "none",
-            "brightness": quality.brightness,
-            "blur_variance": quality.blur_variance,
-        },
-        "detections": [
-            {
-                "class_name":      a.detection.class_name,
-                "confidence":      round(a.detection.confidence, 3),
-                "bbox":            list(a.detection.bbox),
-                "distance_metres": (
-                    round(a.detection.distance_metres, 3)
-                    if not np.isnan(a.detection.distance_metres) else None
-                ),
-                "risk_score":      round(a.score, 3),
-                "risk_level":      a.level.value,
-                "action":          a.action,
-                "motion_trend":    state.session.motion_trend(a.detection.class_name),
-                "is_confident":    a.detection.confidence >= settings.YOLO_CONFIDENCE_GATE,
-                "context_weight":  (
-                    round(a.context_result.final_weight, 3)
-                    if a.context_result else None
-                ),
-                "spatial_memory":  (
-                    a.context_result.spatial_memory if a.context_result else None
-                ),
-            }
-            for a in assessments
-        ],
-        "dominant_level":    dominant_level,
+        # ── Core DetectionFrame fields (must match frontend types.ts) ──
+        "timestamp":         ts,
+        "detections":        [_make_detection_dict(a, frame_shape) for a in assessments],
+        "riskLevel":         dominant_level if dominant_level != "NONE" else "LOW",
+        "riskScore":         dominant_score,
+        "riskReason":        dominant_reason,
+        "suppressed":        (spoke is None and dominant is not None
+                              and dominant.level.value in ("HIGH", "MEDIUM")),
+        "suppressionReason": None,
+        "latencyMs":         latency_ms,
+        # ── Extension fields ──
+        "status":            "ok",
+        "spokeGhost":        spoke_ghost,
         "spoke":             spoke,
-        "spoke_ghost":       spoke_ghost,
-        "memory_context":    memory_context,
-        "suppression_stats": state.alert_manager.counts,
-        "spatial_map":       state.spatial_map.snapshot(),
+        "memoryContext":     memory_context,
+        "suppressionStats":  state.alert_manager.counts,
+        "spatialMap":        state.spatial_map.snapshot(),
     }
 
 
@@ -400,6 +429,10 @@ async def ws_stream(websocket: WebSocket) -> None:
     try:
         while True:
             message = await websocket.receive()
+
+            # Client closed the connection cleanly
+            if message["type"] == "websocket.disconnect":
+                break
 
             # Text message = optional frame_id tag for the next binary frame
             if message["type"] == "websocket.receive" and message.get("text"):

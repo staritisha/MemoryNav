@@ -50,3 +50,5 @@ runs/
 run_finetune_free.py
 .vscode/
 data/chroma_store/
+data/memorynav.db
+data/models/

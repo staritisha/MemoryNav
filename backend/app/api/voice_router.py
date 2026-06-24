@@ -110,6 +110,13 @@ from app.config import settings
 from app.perception.ocr import OCRReader
 from app.voice.stt import WhisperSTT
 
+# Import the shared pipeline state accessor so voice queries read from
+# the same LongTermMemory and SessionStore instances that ws_stream.py
+# writes to.  Calling module-level functions on the memory modules
+# directly would create separate instances that never receive pipeline
+# data — stale/empty results every time.
+from app.api.ws_stream import get_state
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/voice", tags=["voice"])
@@ -138,36 +145,17 @@ def _get_ocr() -> OCRReader:
 
 
 # ── Memory module imports ─────────────────────────────────────────────────────
-# Imported lazily with a try/except so the router can still be registered
-# (and its non-memory paths tested) even if Phase 3 modules aren't wired
-# yet.  Missing memory modules degrade gracefully — answers still work,
-# they just lack long-term context.
+# Memory instances live on PipelineState (created once in ws_stream.init_pipeline).
+# We access them via get_state() so voice queries always read from the same
+# LongTermMemory and SessionStore that the WebSocket pipeline writes to.
+# Falling back gracefully when the pipeline hasn't started yet (e.g. unit tests).
 
-try:
-    from app.memory_modules import long_term as _long_term   # item 13
-    _HAS_LONG_TERM = True
-except ImportError:
-    _HAS_LONG_TERM = False
-    logger.warning(
-        "[voice_router] app.memory_modules.long_term not available — "
-        "long-term home context will be skipped. Wire Phase 3 first."
-    )
-
-try:
-    from app.memory_modules import short_term as _short_term  # item 14
-    _HAS_SHORT_TERM = True
-except ImportError:
-    _HAS_SHORT_TERM = False
-    logger.warning(
-        "[voice_router] app.memory_modules.short_term not available — "
-        "recent-obstacle context will be skipped."
-    )
-
-try:
-    from app.memory_modules import preferences as _preferences  # item 12
-    _HAS_PREFERENCES = True
-except ImportError:
-    _HAS_PREFERENCES = False
+def _pipeline_available() -> bool:
+    try:
+        get_state()
+        return True
+    except RuntimeError:
+        return False
 
 
 # ── GPT-4o Vision (optional) ──────────────────────────────────────────────────
@@ -200,6 +188,11 @@ _OCR_KEYWORDS: tuple[str, ...] = (
     "what is written",
     "what does the sign say",
     "what does the label say",
+    "read the sign",
+    "read the label",
+    "read the text",
+    "what does the text",
+    "read ",       # catches "read the menu", "read this sign", etc.
 )
 
 _SCENE_KEYWORDS: tuple[str, ...] = (
@@ -314,15 +307,15 @@ class VoiceResponse(BaseModel):
 
 def _retrieve_long_term(query: str) -> list[str]:
     """
-    Pull relevant home-layout context from ChromaDB.
-    Returns an empty list when the module is unavailable.
-
-    TODO: adjust call signature if long_term.retrieve() differs.
+    Pull relevant home-layout context from the shared LongTermMemory instance.
+    Returns an empty list when the pipeline is not yet initialized or the
+    query returns no results.
     """
-    if not _HAS_LONG_TERM:
+    if not _pipeline_available():
         return []
     try:
-        return _long_term.retrieve(query)  # type: ignore[attr-defined]
+        results = get_state().long_term.retrieve(query)
+        return [r.text for r in results]
     except Exception:
         logger.error("[voice_router] long_term.retrieve() failed.", exc_info=True)
         return []
@@ -330,34 +323,29 @@ def _retrieve_long_term(query: str) -> list[str]:
 
 def _get_short_term_summary() -> Optional[str]:
     """
-    Get a text summary of the last 30s obstacles from short-term memory.
-    Returns None when the module is unavailable or the window is empty.
-
-    TODO: adjust call signature if short_term.get_recent_summary() differs.
+    Get a text summary of the last 30s obstacles from the shared SessionStore.
+    Returns None when the pipeline is not initialized or the window is empty.
     """
-    if not _HAS_SHORT_TERM:
+    if not _pipeline_available():
         return None
     try:
-        return _short_term.get_recent_summary()  # type: ignore[attr-defined]
+        return get_state().session.get_recent_summary()
     except Exception:
-        logger.error("[voice_router] short_term.get_recent_summary() failed.", exc_info=True)
+        logger.error("[voice_router] session.get_recent_summary() failed.", exc_info=True)
         return None
 
 
 def _record_to_short_term(question: str, answer: str) -> None:
     """
-    Log this voice interaction into short-term session memory so the
-    temporal suppression layer and future queries within this session
-    can see it.
-
-    TODO: adjust call signature if short_term.record_voice_query() differs.
+    Log this voice interaction into the shared SessionStore so the temporal
+    suppression layer and future queries within this session can see it.
     """
-    if not _HAS_SHORT_TERM:
+    if not _pipeline_available():
         return
     try:
-        _short_term.record_voice_query(question, answer)  # type: ignore[attr-defined]
+        get_state().session.record_voice_query(question, answer)
     except Exception:
-        logger.warning("[voice_router] short_term.record_voice_query() failed.", exc_info=True)
+        logger.warning("[voice_router] session.record_voice_query() failed.", exc_info=True)
 
 
 # ── Answer builders ───────────────────────────────────────────────────────────
