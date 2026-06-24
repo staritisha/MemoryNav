@@ -1,0 +1,19 @@
+{
+  "dataset": "LibreYOLO/furniture-ngpea (CC-BY-4.0)",
+  "classes": [
+    "Chair",
+    "Sofa",
+    "Table"
+  ],
+  "epochs": 30,
+  "train_time_s": 5945.1,
+  "baseline_pretrained": {
+    "mAP50": 0.005506912442396312,
+    "mAP50_95": 0.0037772657450076802
+  },
+  "finetuned": {
+    "mAP50": 0.9603531094271225,
+    "mAP50_95": 0.8270216460842328
+  },
+  "mAP50_improvement": 0.9548
+}
