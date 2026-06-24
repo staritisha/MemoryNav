@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="640" viewBox="0 0 900 640" font-family="'JetBrains Mono', 'Courier New', monospace">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#5EEAD4"/>
+    </marker>
+    <marker id="arrow-mem" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#818CF8"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="640" fill="#0A0C0E"/>
+  <!-- Subtle grid -->
+  <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+    <path d="M 28 0 L 0 0 0 28" fill="none" stroke="rgba(255,255,255,0.018)" stroke-width="0.5"/>
+  </pattern>
+  <rect width="900" height="640" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="450" y="38" text-anchor="middle" font-size="15" font-weight="600" fill="#E7ECEE" letter-spacing="1">MemoryNav — Pipeline Architecture</text>
+  <text x="450" y="56" text-anchor="middle" font-size="10" fill="#565E66" letter-spacing="2">CAMERA → FRAME QUALITY → YOLO → BYTETRACK → DEPTH → RISK → MEMORY → ALERT MANAGER → VOICE</text>
+
+  <!-- ── MAIN PIPELINE (left to right, y=140) ──────────────────────── -->
+
+  <!-- 1. Camera -->
+  <rect x="30" y="120" width="90" height="52" rx="6" fill="#0E1113" stroke="#262B2F" stroke-width="1.2"/>
+  <text x="75" y="143" text-anchor="middle" font-size="9" fill="#5EEAD4" font-weight="600">CAMERA</text>
+  <text x="75" y="156" text-anchor="middle" font-size="8" fill="#565E66">30 fps</text>
+  <text x="75" y="167" text-anchor="middle" font-size="8" fill="#565E66">640×480 BGR</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="120" y1="146" x2="148" y2="146" stroke="#5EEAD4" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- 2. Frame Quality Gate -->
+  <rect x="150" y="120" width="100" height="52" rx="6" fill="#0E1113" stroke="#262B2F" stroke-width="1.2"/>
+  <text x="200" y="140" text-anchor="middle" font-size="9" fill="#5EEAD4" font-weight="600">FRAME QUALITY</text>
+  <text x="200" y="152" text-anchor="middle" font-size="8" fill="#565E66">brightness gate</text>
+  <text x="200" y="163" text-anchor="middle" font-size="8" fill="#565E66">blur gate</text>
+
+  <!-- DROP path from frame quality -->
+  <line x1="200" y1="172" x2="200" y2="195" stroke="#FF5C5C" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="204" y="208" font-size="8" fill="#FF5C5C">DROP</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="250" y1="146" x2="278" y2="146" stroke="#5EEAD4" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- 3. YOLOv8-nano -->
+  <rect x="280" y="120" width="100" height="52" rx="6" fill="#0E1113" stroke="#262B2F" stroke-width="1.2"/>
+  <text x="330" y="140" text-anchor="middle" font-size="9" fill="#5EEAD4" font-weight="600">YOLOv8-nano</text>
+  <text x="330" y="152" text-anchor="middle" font-size="8" fill="#565E66">mAP@50: 0.960</text>
+  <text x="330" y="163" text-anchor="middle" font-size="8" fill="#565E66">22.8 ms/frame</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="380" y1="146" x2="408" y2="146" stroke="#5EEAD4" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- 4. ByteTrack -->
+  <rect x="410" y="120" width="100" height="52" rx="6" fill="#0E1113" stroke="#262B2F" stroke-width="1.2"/>
+  <text x="460" y="140" text-anchor="middle" font-size="9" fill="#5EEAD4" font-weight="600">BYTETRACK</text>
+  <text x="460" y="152" text-anchor="middle" font-size="8" fill="#565E66">stable track_id</text>
+  <text x="460" y="163" text-anchor="middle" font-size="8" fill="#565E66">per instance</text>
+
+  <!-- Arrow 4→5 -->
+  <line x1="510" y1="146" x2="538" y2="146" stroke="#5EEAD4" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- 5. Depth-Anything -->
+  <rect x="540" y="120" width="110" height="52" rx="6" fill="#0E1113" stroke="#262B2F" stroke-width="1.2"/>
+  <text x="595" y="140" text-anchor="middle" font-size="9" fill="#5EEAD4" font-weight="600">DEPTH-ANYTHING</text>
+  <text x="595" y="152" text-anchor="middle" font-size="8" fill="#565E66">V2 Metric Indoor</text>
+  <text x="595" y="163" text-anchor="middle" font-size="8" fill="#565E66">33.9 ms (skip×3)</text>
+
+  <!-- Arrow 5→6 -->
+  <line x1="650" y1="146" x2="678" y2="146" stroke="#5EEAD4" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- 6. Risk Engine -->
+  <rect x="680" y="120" width="100" height="52" rx="6" fill="#0E1113" stroke="#FFB84D" stroke-width="1.2"/>
+  <text x="730" y="140" text-anchor="middle" font-size="9" fill="#FFB84D" font-weight="600">RISK ENGINE</text>
+  <text x="730" y="152" text-anchor="middle" font-size="8" fill="#565E66">1/d × motion</text>
+  <text x="730" y="163" text-anchor="middle" font-size="8" fill="#565E66">× context_weight</text>
+
+  <!-- ── MEMORY LAYER (y=300) ──────────────────────────────────────── -->
+
+  <!-- Long-term memory box -->
+  <rect x="270" y="290" width="130" height="60" rx="6" fill="#0E1113" stroke="#818CF8" stroke-width="1.2"/>
+  <text x="335" y="312" text-anchor="middle" font-size="9" fill="#818CF8" font-weight="600">LONG-TERM MEMORY</text>
+  <text x="335" y="324" text-anchor="middle" font-size="8" fill="#565E66">ChromaDB</text>
+  <text x="335" y="335" text-anchor="middle" font-size="8" fill="#565E66">sentence-transformers</text>
+  <text x="335" y="346" text-anchor="middle" font-size="8" fill="#565E66">persistent · cross-session</text>
+
+  <!-- Short-term memory box -->
+  <rect x="430" y="290" width="120" height="60" rx="6" fill="#0E1113" stroke="#818CF8" stroke-width="1.2"/>
+  <text x="490" y="312" text-anchor="middle" font-size="9" fill="#818CF8" font-weight="600">SHORT-TERM</text>
+  <text x="490" y="324" text-anchor="middle" font-size="8" fill="#565E66">SessionStore</text>
+  <text x="490" y="335" text-anchor="middle" font-size="8" fill="#565E66">motion trend</text>
+  <text x="490" y="346" text-anchor="middle" font-size="8" fill="#565E66">30s rolling window</text>
+
+  <!-- Spatial map box -->
+  <rect x="580" y="290" width="110" height="60" rx="6" fill="#0E1113" stroke="#818CF8" stroke-width="1.2"/>
+  <text x="635" y="312" text-anchor="middle" font-size="9" fill="#818CF8" font-weight="600">SPATIAL MAP</text>
+  <text x="635" y="324" text-anchor="middle" font-size="8" fill="#565E66">room → object</text>
+  <text x="635" y="335" text-anchor="middle" font-size="8" fill="#565E66">→ position + dist</text>
+  <text x="635" y="346" text-anchor="middle" font-size="8" fill="#565E66">in-session</text>
+
+  <!-- Memory connections (dashed purple) -->
+  <!-- Risk Engine ↔ Long-term memory (context_weight resolver) -->
+  <line x1="730" y1="172" x2="730" y2="265" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2"/>
+  <line x1="730" y1="265" x2="335" y2="265" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2"/>
+  <line x1="335" y1="265" x2="335" y2="290" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrow-mem)"/>
+  <text x="530" y="260" text-anchor="middle" font-size="8" fill="#818CF8">context_weight (+0.30 spatial boost)</text>
+
+  <!-- ByteTrack → Short-term (motion trend) -->
+  <line x1="460" y1="172" x2="460" y2="255" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2"/>
+  <line x1="460" y1="255" x2="490" y2="255" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2"/>
+  <line x1="490" y1="255" x2="490" y2="290" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrow-mem)"/>
+
+  <!-- Depth → Spatial map -->
+  <line x1="595" y1="172" x2="595" y2="255" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2"/>
+  <line x1="595" y1="255" x2="635" y2="255" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2"/>
+  <line x1="635" y1="255" x2="635" y2="290" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrow-mem)"/>
+
+  <!-- ── ALERT + VOICE (y=440) ─────────────────────────────────────── -->
+
+  <!-- Arrow Risk→AlertManager (down then right) -->
+  <line x1="730" y1="172" x2="730" y2="430" stroke="#5EEAD4" stroke-width="1.2"/>
+  <line x1="730" y1="430" x2="662" y2="430" stroke="#5EEAD4" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- Alert Manager -->
+  <rect x="490" y="410" width="170" height="52" rx="6" fill="#0E1113" stroke="#FFB84D" stroke-width="1.2"/>
+  <text x="575" y="432" text-anchor="middle" font-size="9" fill="#FFB84D" font-weight="600">ALERT MANAGER</text>
+  <text x="575" y="444" text-anchor="middle" font-size="8" fill="#565E66">TemporalAlertManager</text>
+  <text x="575" y="455" text-anchor="middle" font-size="8" fill="#565E66">4s suppression · WalkVLM</text>
+
+  <!-- Ghost alert from long-term → alert manager -->
+  <line x1="335" y1="350" x2="335" y2="430" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2"/>
+  <line x1="335" y1="430" x2="490" y2="430" stroke="#818CF8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrow-mem)"/>
+  <text x="410" y="425" text-anchor="middle" font-size="8" fill="#818CF8">ghost alerts</text>
+
+  <!-- Arrow AlertManager→Voice -->
+  <line x1="490" y1="436" x2="462" y2="436" stroke="#5EEAD4" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- Voice Output -->
+  <rect x="310" y="410" width="170" height="52" rx="6" fill="#0E1113" stroke="#4ADE80" stroke-width="1.2"/>
+  <text x="395" y="432" text-anchor="middle" font-size="9" fill="#4ADE80" font-weight="600">VOICE OUTPUT</text>
+  <text x="395" y="444" text-anchor="middle" font-size="8" fill="#565E66">pyttsx3 · offline TTS</text>
+  <text x="395" y="455" text-anchor="middle" font-size="8" fill="#565E66">110 ms end-to-end</text>
+
+  <!-- Confidence gate label -->
+  <rect x="310" y="490" width="350" height="30" rx="4" fill="#0E1113" stroke="#262B2F" stroke-width="1"/>
+  <text x="485" y="509" text-anchor="middle" font-size="8" fill="#565E66">CONFIDENCE GATE: conf ≥ 0.60 → speak class name · conf 0.25–0.60 → "something may be ahead" · conf &lt; 0.25 → drop</text>
+
+  <!-- ── LEGEND ──────────────────────────────────────────────────────── -->
+  <rect x="30" y="550" width="840" height="66" rx="6" fill="#0E1113" stroke="#1A1E21" stroke-width="1"/>
+  <text x="50" y="568" font-size="9" font-weight="600" fill="#E7ECEE">Hardware: Apple M2 · Python 3.12 · PyTorch MPS</text>
+  <line x1="50" y1="578" x2="68" y2="578" stroke="#5EEAD4" stroke-width="1.5"/>
+  <text x="72" y="581" font-size="8" fill="#8B95A1">perception pipeline</text>
+  <line x1="160" y1="578" x2="178" y2="578" stroke="#818CF8" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="182" y="581" font-size="8" fill="#8B95A1">memory feedback</text>
+  <line x1="270" y1="578" x2="288" y2="578" stroke="#FFB84D" stroke-width="1.5"/>
+  <text x="292" y="581" font-size="8" fill="#8B95A1">risk / alert</text>
+  <line x1="350" y1="578" x2="368" y2="578" stroke="#4ADE80" stroke-width="1.5"/>
+  <text x="372" y="581" font-size="8" fill="#8B95A1">voice output</text>
+  <line x1="430" y1="578" x2="448" y2="578" stroke="#FF5C5C" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="452" y="581" font-size="8" fill="#8B95A1">drop / suppress</text>
+  <text x="680" y="568" font-size="9" fill="#565E66">mAP@50: 0.960 · latency p50: 84.7ms · false-alert reduction: 94.9%</text>
+  <text x="680" y="582" font-size="9" fill="#565E66">nav success: 66.7% (vs 16.7% detection-only baseline)</text>
+  <text x="680" y="596" font-size="9" fill="#565E66">github.com/staritisha/MemoryNav</text>
+</svg>

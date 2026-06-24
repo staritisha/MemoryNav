@@ -83,22 +83,36 @@ This combination — persistent personalized memory _and_ alert-fatigue mitigati
 
 ## 6. Architecture
 
-Camera to voice output, every layer named. The vision pipeline (Layers 2–5) is the reliable core and never depends on the optional LLM layer (10) to function.
+Camera to voice output, every layer named. The vision pipeline (Layers 2–5) is the reliable core and never depends on the optional LLM layer to function.
+
+![MemoryNav Pipeline Architecture](docs/architecture.svg)
 
 ```mermaid
 flowchart TD
     A["1. Camera Frame<br/>~30 FPS, chest-mounted"] --> B["2. Frame Quality Check<br/>blur / brightness gate"]
-    B --> C["3. YOLOv8-nano<br/>object detection"]
-    C --> D["4. Depth-Anything<br/>monocular distance"]
-    D --> E["5. Risk Engine<br/>distance × motion × context"]
-    E --> F["6. Short-Term Memory<br/>last 30s session state"]
-    E --> G["7. Long-Term Memory<br/>ChromaDB home layout"]
-    F --> H["8. Alert Manager<br/>WalkVLM-inspired suppression"]
-    G --> H
-    H --> I["9. Voice Output<br/>pyttsx3 / ElevenLabs"]
-    C -.optional, on-demand.-> J["10. LLM Layer<br/>GPT-4o Vision"]
-    J -.-> I
+    B --> C["3. YOLOv8-nano<br/>mAP@50: 0.960 · 22.8ms"]
+    C --> D["4. ByteTrack<br/>stable track_id per instance"]
+    D --> E["5. Depth-Anything V2<br/>metric metres · 33.9ms (skip×3)"]
+    E --> F["6. Risk Engine<br/>1/d × motion × context_weight"]
+    F --> G["7. Long-Term Memory<br/>ChromaDB · cross-session"]
+    F --> H["8. Short-Term Memory<br/>SessionStore · 30s window"]
+    F --> I["9. Spatial Map<br/>room → object → position"]
+    G --> J["10. Alert Manager<br/>WalkVLM suppression · 4s window"]
+    H --> J
+    J --> K["11. Voice Output<br/>pyttsx3 · offline · 84.7ms p50"]
 ```
+
+**Pipeline stages and measured latency (CPU, Apple M2):**
+
+| Stage | Module | Latency |
+|---|---|---|
+| Frame Quality Gate | `perception/frame_quality.py` | ~1ms |
+| YOLOv8-nano Detection | `perception/detector.py` | 22.8ms avg |
+| ByteTrack Tracking | `perception/tracker.py` | ~2ms |
+| Depth-Anything V2 Metric | `perception/depth.py` | 33.9ms (amortised, skip×3) |
+| Risk Engine + Memory | `risk/engine.py` + ChromaDB | 1.5ms |
+| Alert Manager | `alerts/temporal_manager.py` | ~0.1ms |
+| **End-to-end p50** | full pipeline | **84.7ms** |
 
 **Six core modules**, each with a single clear responsibility:
 

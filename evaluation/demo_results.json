@@ -1,0 +1,189 @@
+{
+  "video": "evaluation/videos/living_room_01.mp4",
+  "frames_per_pass": 90,
+  "generated_at": "2026-06-24T19:35:15",
+  "memory_entries_written": 193,
+  "pass_1": {
+    "label": "Pass 1 \u2014 building memory",
+    "frames_processed": 90,
+    "high_risk_alerts": 24,
+    "ghost_alerts": 0,
+    "memory_boosts": 289,
+    "ghost_examples": [],
+    "memory_boost_examples": [
+      {
+        "frame": 6,
+        "object": "couch",
+        "memory": "couch observed in the area (7.8m)",
+        "boost": 0.3,
+        "sim": 0.693
+      },
+      {
+        "frame": 6,
+        "object": "potted plant",
+        "memory": "potted plant observed in the area (6.0m)",
+        "boost": 0.3,
+        "sim": 0.65
+      },
+      {
+        "frame": 6,
+        "object": "potted plant",
+        "memory": "potted plant observed in the area (6.0m)",
+        "boost": 0.3,
+        "sim": 0.65
+      }
+    ],
+    "spatial_map": {
+      "current_room": "Living Room",
+      "rooms": {
+        "Living Room": {
+          "couch": {
+            "position": "left",
+            "distance_m": 2.05,
+            "last_seen_s_ago": 0.1,
+            "confidence": 0.453,
+            "sightings": 179
+          },
+          "potted plant": {
+            "position": "right",
+            "distance_m": 5.92,
+            "last_seen_s_ago": 0.1,
+            "confidence": 0.707,
+            "sightings": 114
+          },
+          "chair": {
+            "position": "right",
+            "distance_m": 4.42,
+            "last_seen_s_ago": 0.1,
+            "confidence": 0.258,
+            "sightings": 23
+          },
+          "cup": {
+            "position": "right",
+            "distance_m": 3.22,
+            "last_seen_s_ago": 4.8,
+            "confidence": 0.259,
+            "sightings": 56
+          },
+          "vase": {
+            "position": "right",
+            "distance_m": 2.69,
+            "last_seen_s_ago": 0.1,
+            "confidence": 0.329,
+            "sightings": 29
+          },
+          "dining table": {
+            "position": "right",
+            "distance_m": 3.0,
+            "last_seen_s_ago": 15.9,
+            "confidence": 0.277,
+            "sightings": 1
+          },
+          "tv": {
+            "position": "center",
+            "distance_m": 7.46,
+            "last_seen_s_ago": 11.4,
+            "confidence": 0.309,
+            "sightings": 1
+          }
+        }
+      }
+    }
+  },
+  "pass_2": {
+    "label": "Pass 2 \u2014 using memory",
+    "frames_processed": 90,
+    "high_risk_alerts": 24,
+    "ghost_alerts": 0,
+    "memory_boosts": 293,
+    "ghost_examples": [],
+    "memory_boost_examples": [
+      {
+        "frame": 3,
+        "object": "couch",
+        "memory": "couch observed in the area (7.9m)",
+        "boost": 0.3,
+        "sim": 0.697
+      },
+      {
+        "frame": 3,
+        "object": "potted plant",
+        "memory": "potted plant observed in the area (5.9m)",
+        "boost": 0.3,
+        "sim": 0.7
+      },
+      {
+        "frame": 3,
+        "object": "potted plant",
+        "memory": "potted plant observed in the area (5.9m)",
+        "boost": 0.3,
+        "sim": 0.7
+      }
+    ],
+    "spatial_map": {
+      "current_room": "Living Room",
+      "rooms": {
+        "Living Room": {
+          "couch": {
+            "position": "left",
+            "distance_m": 2.05,
+            "last_seen_s_ago": 0.1,
+            "confidence": 0.453,
+            "sightings": 179
+          },
+          "potted plant": {
+            "position": "right",
+            "distance_m": 5.92,
+            "last_seen_s_ago": 0.1,
+            "confidence": 0.707,
+            "sightings": 114
+          },
+          "chair": {
+            "position": "right",
+            "distance_m": 4.42,
+            "last_seen_s_ago": 0.1,
+            "confidence": 0.258,
+            "sightings": 23
+          },
+          "cup": {
+            "position": "right",
+            "distance_m": 3.22,
+            "last_seen_s_ago": 4.4,
+            "confidence": 0.259,
+            "sightings": 56
+          },
+          "vase": {
+            "position": "right",
+            "distance_m": 2.69,
+            "last_seen_s_ago": 0.1,
+            "confidence": 0.329,
+            "sightings": 29
+          },
+          "dining table": {
+            "position": "right",
+            "distance_m": 3.0,
+            "last_seen_s_ago": 14.6,
+            "confidence": 0.277,
+            "sightings": 1
+          },
+          "tv": {
+            "position": "center",
+            "distance_m": 7.46,
+            "last_seen_s_ago": 11.1,
+            "confidence": 0.309,
+            "sightings": 1
+          }
+        }
+      }
+    }
+  },
+  "key_finding": {
+    "ghost_alerts_pass1": 0,
+    "ghost_alerts_pass2": 0,
+    "memory_boosts_pass1": 289,
+    "memory_boosts_pass2": 293,
+    "high_risk_alerts_pass1": 24,
+    "high_risk_alerts_pass2": 24,
+    "summary": "Pass 2 fired 0 ghost alert(s) and 293 memory-boosted risk score(s) that Pass 1 (no memory) could not produce."
+  }
+}
