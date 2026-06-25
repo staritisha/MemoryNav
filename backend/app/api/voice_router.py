@@ -592,6 +592,18 @@ async def post_voice(
             detail="Failed to read audio data.",
         )
 
+    if len(audio_bytes) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Audio file is empty.",
+        )
+
+    if len(audio_bytes) > settings.MAX_AUDIO_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"Audio exceeds {settings.MAX_AUDIO_UPLOAD_BYTES // (1024*1024)}MB limit.",
+        )
+
     frame_bytes: Optional[bytes] = None
     if frame is not None:
         try:

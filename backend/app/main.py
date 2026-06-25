@@ -126,8 +126,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from app.api.memory_router import init_memory
     from app.api.preferences_router import init_preferences
 
-    logger.info("Initialising WS pipeline …")
-    app.state.pipeline = init_pipeline()
+    logger.info("Wiring WS pipeline with pre-loaded model instances …")
+    app.state.pipeline = init_pipeline(
+        detector        = app.state.detector,
+        depth_estimator = app.state.depth_estimator,
+        tts             = app.state.tts_engine,
+        long_term       = app.state.long_term_memory,
+        prefs_store     = app.state.preferences_store,
+        alert_manager   = app.state.alert_manager,
+        session         = app.state.short_term_memory,
+    )
 
     logger.info("Wiring memory router …")
     init_memory(app.state.long_term_memory)

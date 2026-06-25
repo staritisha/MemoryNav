@@ -192,7 +192,12 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------- #
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+    # Override via CORS_ORIGINS env var for production deployments.
+    # Example: CORS_ORIGINS='["https://yourapp.vercel.app","http://localhost:3000"]'
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+
+    # Maximum audio upload size for /voice endpoint (bytes). Default 10MB.
+    MAX_AUDIO_UPLOAD_BYTES: int = 10 * 1024 * 1024  # 10 MB
 
     @field_validator("ELEVENLABS_API_KEY", "OPENAI_API_KEY", mode="before")
     @classmethod
